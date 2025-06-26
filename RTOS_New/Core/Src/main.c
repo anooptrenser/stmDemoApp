@@ -21,6 +21,9 @@
 #include "cmsis_os.h"
 #include "string.h"
 #include "stdbool.h"
+#include "stdio.h"
+#include "uartPrint.h"
+#include "ledBlink.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -352,17 +355,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartTask1 */
 void StartTask1(void *argument)
 {
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-	  HAL_GPIO_WritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_SET);
-	  osDelay(500);
+	  ledBlink();
 
-	  HAL_GPIO_WritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_RESET);
-	  osDelay(500);
-  }
-  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_StartTask02 */
@@ -374,29 +368,7 @@ void StartTask1(void *argument)
 /* USER CODE END Header_StartTask02 */
 void StartTask02(void *argument)
 {
-  /* USER CODE BEGIN StartTask02 */
-  char *msg_on = "UART: LED ON\r\n";
-  char *msg_off = "UART: LED OFF\r\n";
-  bool current_state_for_print = false; //
-  /* Infinite loop */
-  for(;;)
-  {
-	  if (current_state_for_print)
-	  	     {
-	  	         HAL_UART_Transmit(&huart3, (uint8_t*)msg_on, strlen(msg_on), 100);
-	  	         osDelay(1000);
-	  	     }
-	  	     else
-	  	     {
-	  	         // Transmit "Direct UART: LED OFF"
-	  	         HAL_UART_Transmit(&huart3, (uint8_t*)msg_off, strlen(msg_off), 100);
-	  	         osDelay(1000);
-	  	     }
-	  current_state_for_print = !current_state_for_print;
-  }
-
-
-  /* USER CODE END StartTask02 */
+	uartPrint();
 }
 
 /**
