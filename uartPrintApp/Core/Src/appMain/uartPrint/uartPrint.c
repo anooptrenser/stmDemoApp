@@ -31,20 +31,17 @@ void uartPrint(void)
 {
     bool blLedOn = false;
     /* Infinite loop */
-    for(;;)
-    {
         if (blLedOn)
         {
             printf("UART: LED ON\r\n");
-            HAL_Delay(1000);
+            osDelay(DELAY);
         } else
         {
         	printf("UART: LED OFF\r\n");
-            HAL_Delay(1000);
+            osDelay(DELAY);
         }
 
         blLedOn = !blLedOn;
-    }
 }
 
 //EOF

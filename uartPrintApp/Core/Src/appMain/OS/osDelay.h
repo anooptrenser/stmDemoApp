@@ -1,23 +1,26 @@
-//**************************** uartPrint **************************************
+//**************************** osDelay ****************************************
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : uartPrint.h
-// Summary  : uartPrint Header file
+// File     : osDelay.h
+// Summary  : Header file for OS-level delay wrapper functions
 // Note     : None
 // Author   : Anoop G
-// Date     : 26/06/2025
+// Date     : 27/06/2025
 //
 //*****************************************************************************
-#ifndef INC_UARTPRINT_H_
-#define INC_UARTPRINT_H_
+#ifndef _OSDELAY_H_
+#define _OSDELAY_H_
 
 //***************************** Include Files *********************************
-#include "main.h" // Include your main header for HAL and UART definitions
+#include "main.h" 
+
+//***************************** Global Constants ****************************** 
+#define DELAY 1000
 
 //***************************** Function Declarations *************************
-void uartPrint(void);
+void osDelay(uint32_t milliseconds);
 
-#endif /* INC_UARTPRINT_H_ */
+#endif /* _OSDELAY_H_ */
 //EOF

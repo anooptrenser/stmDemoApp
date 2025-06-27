@@ -1,20 +1,23 @@
-//**************************** appMain **************************************
+//**************************** uartPrint **************************************
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : appMain.h
-// Summary  : Header file for appMain function
+// File     : uartPrint.h
+// Summary  : uartPrint Header file
 // Note     : None
 // Author   : Anoop G
 // Date     : 26/06/2025
 //
 //*****************************************************************************
-#ifndef _APPMAIN_H_
-#define _APPMAIN_H_
+#ifndef _UARTPRINT_H_
+#define _UARTPRINT_H_
+
+//***************************** Include Files *********************************
+#include "main.h" // Include your main header for HAL and UART definitions
 
 //***************************** Function Declarations *************************
-void appMain(void);
+void uartPrint(void);
 
-#endif /* _APPMAIN_H_ */
+#endif /* _UARTPRINT_H_ */
 //EOF

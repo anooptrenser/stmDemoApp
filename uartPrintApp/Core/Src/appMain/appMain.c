@@ -23,7 +23,11 @@
 void appMain(void)
 {
     // Call the uartPrint function
-    uartPrint();
+    while (1)
+    {
+        uartPrint();
+    }
+    
 }
 //EOF
 
