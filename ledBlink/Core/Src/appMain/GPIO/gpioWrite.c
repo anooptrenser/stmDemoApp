@@ -25,7 +25,7 @@
 // Return   : None
 // Notes    : This function simply calls the underlying STM32 HAL function.
 //*****************************************************************************
-void GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
+void GpioWritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
 {
     // Call the STM32 HAL function directly
     HAL_GPIO_WritePin(GPIOx, GPIO_Pin, PinState);

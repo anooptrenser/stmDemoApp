@@ -17,7 +17,7 @@
 #include "main.h"
 
 //***************************** Function Declarations *************************
-void GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);
+void GpioWritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);
 
 #endif /* _GPIO_H_ */
 //EOF

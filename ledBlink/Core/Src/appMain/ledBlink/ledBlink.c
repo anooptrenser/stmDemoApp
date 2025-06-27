@@ -26,9 +26,9 @@
 //*****************************************************************************
 void ledBlink(void)
 {
-	  GPIO_WritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_SET);
+	  GpioWritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_SET);
 	  osDelay(DELAY);
-	  GPIO_WritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_RESET);
+	  GpioWritePin(LED_PB0_Pin_GPIO_Port, LED_PB0_Pin_Pin, GPIO_PIN_RESET);
 	  osDelay(DELAY);
 
 }
