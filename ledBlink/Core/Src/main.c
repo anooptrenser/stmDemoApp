@@ -100,7 +100,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ledBlink();
+  appMain();
   /* USER CODE END 3 */
 }
 
