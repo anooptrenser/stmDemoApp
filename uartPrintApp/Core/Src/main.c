@@ -20,7 +20,7 @@
 #include "main.h"
 #include "string.h"
 #include "stdio.h"
-#include "appMain/appMain.h"
+#include "appMain.h"
 
 UART_HandleTypeDef huart3;
 
