@@ -9,7 +9,7 @@
 //  Date      : 27/06/2025
 //
 //*****************************************************************************
-
+//******************************* Include Files *******************************
 #include "appMain.h"
 #include "osQueue.h"
 #include "pollerTasks.h"
@@ -18,16 +18,13 @@
 #include <stdbool.h>
 
 //******************************.AppMain.**************************************
-// Purpose : Main entry point for application. Initializes OS components and creates tasks.
+// Purpose : Main entry point for application.
 // Inputs  : None
 // Outputs : None
 // Notes   : Handles task creation failures as per Trenser Embedded Coding Standard.
 //**********************************************************************************
 void AppMain(void)
 {
-    // Initialize OS components
-    OsQueueInit();
-
     // Create tasks and check for failures
     if (!PollerTaskCreate())
     {

@@ -1,4 +1,4 @@
-//**************************** ReceiverTask ************************************
+//**************************** ReceiverTask ***********************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
@@ -13,6 +13,7 @@
 #ifndef RECEIVER_TASK_H
 #define RECEIVER_TASK_H
 
+//******************************* Include Files *******************************
 #include "cmsis_os2.h"
 #include <stdbool.h>
 
@@ -23,3 +24,5 @@ bool ReceiverTaskCreate(void);
 void ReceiverTaskRun(void *argument);
 
 #endif /* RECEIVER_TASK_H */
+
+//EOF

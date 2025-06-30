@@ -1,4 +1,4 @@
-//**************************** PollerTasks *************************************
+//**************************** PollerTasks ************************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
@@ -13,15 +13,15 @@
 #ifndef POLLER_TASK_H
 #define POLLER_TASK_H
 
-//******************************* Include Files ********************************
+//******************************* Include Files *******************************
 #include "cmsis_os2.h"
 #include <stdbool.h>
 
-//******************************* Constants ************************************
+//******************************* Constants ***********************************
 #define POLLER_TASK_STACK_SIZE    (128 * 8)
 #define POLLER_TASK_DELAY_MS      (10)
 
-//******************************* Function Prototypes **************************
+//******************************* Function Prototypes *************************
 bool PollerTaskCreate(void);
 void PollerTaskRun(void *argument);
 

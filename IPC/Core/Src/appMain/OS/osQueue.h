@@ -1,4 +1,4 @@
-//**************************** OsQueue ***************************************
+//**************************** OsQueue ****************************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
@@ -55,7 +55,6 @@ extern osMessageQueueId_t PollerToReceiverQueueHandle;
 extern osMessageQueueId_t ReceiverToPollerQueueHandle;
 
 //******************************* Function Prototypes *************************
-void OsQueueInit(void);
 osStatus_t OsQueueSendRequest(RequestMessage *msg);
 osStatus_t OsQueueReceiveRequest(RequestMessage *msg, uint32_t timeout);
 osStatus_t OsQueueSendAck(AckMessage *msg);

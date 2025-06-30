@@ -9,26 +9,32 @@
 //  Date      : 27/06/2025
 //
 //*****************************************************************************
-
+//******************************* Include Files *******************************
 #include "pollerTasks.h"
 #include "osQueue.h"
 #include "gpioWrite.h"
 #include <stdio.h>
 #include <stdbool.h>
 
+//******************************* Global variables ****************************
 static uint32_t transactionUID = 0;
 static uint8_t toggle = 0;
 
-//******************************.PollerTaskCreate.******************************
+//******************************.PollerTaskCreate.*****************************
 // Purpose : Creates and starts the Poller Task for button polling.
 // Inputs  : None
 // Outputs : None
 // Return  : true  - if thread creation was successful
 //           false - if thread creation failed
-// Notes   : Handles edge cases such as thread creation failure and invalid stack size.
-//**********************************************************************************
+// Notes   : Handles edge cases such as thread creation failure.
+//*****************************************************************************
 bool PollerTaskCreate(void)
 {
+    PollerToReceiverQueueHandle = osMessageQueueNew(
+                                    POLLER_TO_RECEIVER_QUEUE_SIZE,
+                                    sizeof(RequestMessage),
+                                    NULL);
+ 
     const osThreadAttr_t PollerTask_attributes =
     {
         .name = "PollerTask",
@@ -42,7 +48,8 @@ bool PollerTaskCreate(void)
         return false;
     }
 
-    osThreadId_t pollerTaskId = osThreadNew(PollerTaskRun, NULL, &PollerTask_attributes);
+    osThreadId_t pollerTaskId = osThreadNew(PollerTaskRun, NULL, 
+                                            &PollerTask_attributes);
 
     if (NULL == pollerTaskId)
     {
@@ -53,13 +60,13 @@ bool PollerTaskCreate(void)
     return true;
 }
 
-//******************************.PollerTaskRun.***********************************
-// Purpose : Main loop for the Poller Task. Polls the user button and sends a request
-//           message when a button press is detected.
+//******************************.PollerTaskRun.********************************
+// Purpose : Main loop for the Poller Task. Polls the user button and sends a 
+//           request message when a button press is detected.
 // Inputs  : void *argument - Not used.
 // Outputs : None
 // Notes   : Handles button state and queue send edge cases.
-//**********************************************************************************
+//*****************************************************************************
 void PollerTaskRun(void *argument)
 {
     uint32_t lastButtonState = 0;

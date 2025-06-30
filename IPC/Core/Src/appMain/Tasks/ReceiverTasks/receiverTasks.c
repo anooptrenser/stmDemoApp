@@ -9,7 +9,7 @@
 //  Date      : 27/06/2025
 //
 //*****************************************************************************
-
+//******************************* Include Files *******************************
 #include "receiverTasks.h"
 #include "osQueue.h"
 #include "gpioWrite.h"
@@ -32,9 +32,22 @@ static CmdHandler cmdHandlerTable[] = {
     HandleCmdClear      // CMD_CLEAR
 };
 
-//******************************.ReceiverTaskCreate.****************************
+//******************************.ReceiverTaskCreate.***************************
+// Purpose : Creates and starts the Receiver Task.
+// Inputs  : None
+// Outputs : None
+// Return  : true  - if the message queue and thread creation were successful
+//           false - if the message queue or thread creation failed
+// Notes   : Initializes a message queue for inter-task communication and
+//           creates the ReceiverTaskRun thread.
+//*****************************************************************************
 bool ReceiverTaskCreate(void)
 {
+    ReceiverToPollerQueueHandle = osMessageQueueNew(
+                                    RECEIVER_TO_POLLER_QUEUE_SIZE,
+                                    sizeof(AckMessage),
+                                    NULL);
+
     const osThreadAttr_t ReceiverTask_attributes =
     {
         .name = "ReceiverTask",
@@ -42,7 +55,8 @@ bool ReceiverTaskCreate(void)
         .priority = RECEIVER_TASK_PRIORITY,
     };
 
-    osThreadId_t receiverTaskId = osThreadNew(ReceiverTaskRun, NULL, &ReceiverTask_attributes);
+    osThreadId_t receiverTaskId = osThreadNew(ReceiverTaskRun, NULL, 
+                                                &ReceiverTask_attributes);
 
     if (NULL == receiverTaskId)
     {
@@ -53,7 +67,15 @@ bool ReceiverTaskCreate(void)
     return true;
 }
 
-//******************************.ReceiverTaskRun.*******************************
+//******************************.ReceiverTaskRun.******************************
+// Purpose : Main execution loop for the Receiver Task.
+// Inputs  : argument - Pointer to arguments (not used in this task)
+// Outputs : None
+// Return  : None (this function runs indefinitely)
+// Notes   : Continuously receives request messages, processes them based on
+//           command type (using a function table), and sends acknowledgment
+//           messages. Logs received commands and errors.
+//*****************************************************************************
 void ReceiverTaskRun(void *argument)
 {
     RequestMessage receivedRequest;
@@ -97,12 +119,21 @@ void ReceiverTaskRun(void *argument)
         }
         else
         {
-            printf("Error: Failed to receive request message (status: %d)\r\n", status);
+            printf("Error: Failed to receive request message (status: %d)\r\n", 
+                                                                        status);
         }
     }
 }
 
-//******************************.HandleCmdGet.**********************************
+//******************************.HandleCmdGet.*********************************
+// Purpose : Handles the CMD_GET command.
+// Inputs  : req - Pointer to the received RequestMessage
+//           ack - Pointer to the AcknowledgmentMessage to be populated
+// Outputs : Populates the 'ack->data' with the current LED state.
+// Return  : None
+// Notes   : Reads the current state of the LED_PIN and sets it in the
+//           acknowledgment message. Prints the LED state.
+//*****************************************************************************
 static void HandleCmdGet(const RequestMessage *req, AckMessage *ack)
 {
     uint8_t ledState = GpioRead(LED_PIN, LED_PORT);
@@ -110,7 +141,17 @@ static void HandleCmdGet(const RequestMessage *req, AckMessage *ack)
     printf("CMD_GET: LED state is %u\r\n", ledState);
 }
 
-//******************************.HandleCmdSet.**********************************
+//******************************.HandleCmdSet.*********************************
+// Purpose : Handles the CMD_SET command.
+// Inputs  : req - Pointer to the received RequestMessage
+//           ack - Pointer to the AcknowledgmentMessage to be populated
+// Outputs : Controls the LED state and populates 'ack->data' with the
+//           new LED state.
+// Return  : None
+// Notes   : Sets the LED_PIN state (ON/OFF) based on 'req->data'.
+//           If 'req->data' is non-zero, LED is turned ON; otherwise, OFF.
+//           Prints the action taken.
+//*****************************************************************************
 static void HandleCmdSet(const RequestMessage *req, AckMessage *ack)
 {
     // If data==1, turn ON; if data==0, turn OFF
@@ -128,7 +169,15 @@ static void HandleCmdSet(const RequestMessage *req, AckMessage *ack)
     }
 }
 
-//******************************.HandleCmdClear.********************************
+//******************************.HandleCmdClear.*******************************
+// Purpose : Handles the CMD_CLEAR command.
+// Inputs  : req - Pointer to the received RequestMessage 
+//           ack - Pointer to the AcknowledgmentMessage to be populated
+// Outputs : Turns off the LED and populates 'ack->data' with the new LED state.
+// Return  : None
+// Notes   : Resets (turns OFF) the LED_PIN regardless of the input data.
+//           Prints the action taken.
+//*****************************************************************************
 static void HandleCmdClear(const RequestMessage *req, AckMessage *ack)
 {
     GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_RESET);
