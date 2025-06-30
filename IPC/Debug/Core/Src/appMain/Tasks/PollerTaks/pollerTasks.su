@@ -1,0 +1,2 @@
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:30:6:PollerTaskCreate	48	static
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:63:6:PollerTaskRun	48	static

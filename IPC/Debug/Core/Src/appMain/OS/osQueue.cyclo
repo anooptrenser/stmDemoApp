@@ -1,0 +1,5 @@
+../Core/Src/appMain/OS/osQueue.c:25:6:OsQueueInit	1
+../Core/Src/appMain/OS/osQueue.c:45:12:OsQueueSendRequest	1
+../Core/Src/appMain/OS/osQueue.c:58:12:OsQueueReceiveRequest	1
+../Core/Src/appMain/OS/osQueue.c:70:12:OsQueueSendAck	1
+../Core/Src/appMain/OS/osQueue.c:83:12:OsQueueReceiveAck	1

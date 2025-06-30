@@ -1,0 +1,5 @@
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:36:6:ReceiverTaskCreate	2
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:57:6:ReceiverTaskRun	5
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:106:13:HandleCmdGet	1
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:114:13:HandleCmdSet	2
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:132:13:HandleCmdClear	1
