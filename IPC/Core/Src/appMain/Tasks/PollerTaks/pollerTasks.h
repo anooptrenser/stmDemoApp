@@ -20,6 +20,7 @@
 //******************************* Constants ***********************************
 #define POLLER_TASK_STACK_SIZE    (128 * 8)
 #define POLLER_TASK_DELAY_MS      (10)
+#define POLLER_TASK_PRIORITY      (osPriorityHigh)
 
 //******************************* Function Prototypes *************************
 bool PollerTaskCreate(void);

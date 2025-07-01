@@ -16,10 +16,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-//******************************* Global variables ****************************
-static uint32_t transactionUID = 0;
-static uint8_t toggle = 0;
-
 //******************************.PollerTaskCreate.*****************************
 // Purpose : Creates and starts the Poller Task for button polling.
 // Inputs  : None
@@ -39,7 +35,7 @@ bool PollerTaskCreate(void)
     {
         .name = "PollerTask",
         .stack_size = POLLER_TASK_STACK_SIZE,
-        .priority = osPriorityHigh,
+        .priority = POLLER_TASK_PRIORITY,
     };
 
     if (0 == PollerTask_attributes.stack_size)
