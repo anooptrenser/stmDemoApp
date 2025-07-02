@@ -13,9 +13,9 @@
 #define POLLERTASK_H
 
 //******************************* Include Files *******************************
+#include <stdbool.h>
 #include "cmsis_os2.h"
 #include "common.h"
-#include <stdbool.h>
 
 //******************************* Constants ***********************************
 #define POLLER_TASK_STACK_SIZE    (128 * 8)

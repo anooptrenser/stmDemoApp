@@ -11,12 +11,11 @@
 //*****************************************************************************
 
 //******************************* Include Files *******************************
+#include <stdio.h>
+#include <stdbool.h>
 #include "pollerTasks.h"
 #include "osQueue.h"
 #include "gpioWrite.h"
-#include <stdio.h>
-#include <stdbool.h>
-
 
 //******************************.PollerTaskCreate.*****************************
 // Purpose : Creates and starts the Poller Task for button polling.
@@ -72,7 +71,7 @@ void PollerTaskRun(void* pArgument)
 
     printf("PollerTask started\r\n");
 
-    for (;;)
+    while(1)
     {
         ulCurrentButtonState = GpioRead(GPIO_PORT_C, LED_PIN_13);
 

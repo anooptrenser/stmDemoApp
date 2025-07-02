@@ -28,7 +28,7 @@ static const TaskCreateFunc taskCreateTable[] = {
     ReceiverTaskCreate
 };
 
-//******************************* Function Prototypes **************************
+//******************************* Function Prototypes *************************
 void AppMain(void);
 
 #endif /* APP_MAIN_H */

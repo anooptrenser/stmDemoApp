@@ -14,6 +14,7 @@
 #define OSQUEUE_H
 
 //******************************* Include Files *******************************
+#include <stdbool.h>
 #include "cmsis_os2.h"
 #include "common.h"
 
@@ -56,10 +57,10 @@ extern osMessageQueueId_t pPollerToReceiverQueueHandle;
 extern osMessageQueueId_t pReceiverToPollerQueueHandle;
 
 //******************************* Function Prototypes *************************
-osStatus_t OsQueueSendRequest(REQUEST_MESSAGE* pstMessage);
-osStatus_t OsQueueReceiveRequest(REQUEST_MESSAGE* pstMessage, uint32 ulTimeout);
-osStatus_t OsQueueSendAck(ACK_MESSAGE* pstAck);
-osStatus_t OsQueueReceiveAck(ACK_MESSAGE* pstAck, uint32 ulTimeout);
+bool OsQueueSendRequest(REQUEST_MESSAGE* pstRequestMessage);
+bool OsQueueReceiveRequest(REQUEST_MESSAGE* pstRequestMessage, uint32 ulTimeout);
+bool OsQueueSendAck(ACK_MESSAGE* pstAckMessage);
+bool OsQueueReceiveAck(ACK_MESSAGE* pstAckMessage, uint32 ulTimeout);
 
 #endif /* OSQUEUE_H */
 

@@ -1,4 +1,4 @@
-//**************************** GpioWrite ***************************************
+//**************************** GpioWrite **************************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
@@ -14,20 +14,16 @@
 #ifndef GPIO_WRITE_H
 #define GPIO_WRITE_H
 
-//******************************* Include Files ********************************
+//******************************* Include Files *******************************
+#include <stdbool.h>
 #include "stm32f4xx_hal.h"
-#include "common.h"  // For uint8
+#include "common.h"  
 
-//******************************* Macro Definitions ****************************
+//******************************* Macro Definitions ***************************
 #define BUTTON_PRESSED_STATE    (0u)
 #define BUTTON_RELEASED_STATE   (1u)
 
-//******************************* Type Definitions *****************************
-
-/**
- * @enum GPIO_PORT
- * @brief Enum for GPIO ports.
- */
+//******************************* Type Definitions ****************************
 typedef enum
 {
     GPIO_PORT_A = 0,
@@ -38,10 +34,6 @@ typedef enum
     GPIO_PORT_INVALID
 } GPIO_PORT;
 
-/**
- * @enum LED_PIN
- * @brief Enum for GPIO pins (0-15) for LED abstraction.
- */
 typedef enum
 {
     LED_PIN_0 = 0,
@@ -63,9 +55,10 @@ typedef enum
     LED_PIN_INVALID
 } LED_PIN;
 
-//******************************* Function Prototypes **************************
-void GpioWrite(GPIO_PORT enPort, LED_PIN enLedPin, uint8 ucState);
+//******************************* Function Prototypes *************************
+bool GpioWrite(GPIO_PORT enPort, LED_PIN enLedPin, uint8 ucState);
 uint8 GpioRead(GPIO_PORT enPort, LED_PIN enLedPin);
+
 
 #endif /* GPIO_WRITE_H */
 

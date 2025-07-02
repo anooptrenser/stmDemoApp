@@ -10,12 +10,10 @@
 //
 //*****************************************************************************
 //******************************* Include Files *******************************
-#include "appMain.h"
-#include "osQueue.h"
 #include <stdio.h>
 #include <stdbool.h>
-
-
+#include "appMain.h"
+#include "osQueue.h"
 
 //******************************.AppMain.**************************************
 // Purpose : Main entry point for application.

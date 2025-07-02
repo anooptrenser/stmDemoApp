@@ -1,4 +1,4 @@
-//**************************** OsQueue *****************************************
+//**************************** OsQueue ****************************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
@@ -11,6 +11,7 @@
 //*****************************************************************************
 
 //******************************* Include Files *******************************
+#include <stdbool.h>
 #include "osQueue.h"
 #include "cmsis_os2.h"
 
@@ -20,72 +21,88 @@ osMessageQueueId_t pReceiverToPollerQueueHandle = NULL;
 
 //******************************.OsQueueSendRequest.***************************
 // Purpose : Sends a request message to the PollerToReceiver queue.
-// Inputs  : pstMessage - Pointer to the request message.
+// Inputs  : pstRequestMessage - Pointer to the request message.
 // Outputs : None
-// Return  : osStatus_t - Status of the queue put operation.
-// Notes   : None
+// Return  : true  - if the message was successfully sent to the queue.
+//           false - if the queue handle is invalid or send failed.
+// Notes   : Application layer abstraction; hides RTOS details.
 //*****************************************************************************
-osStatus_t OsQueueSendRequest(REQUEST_MESSAGE* pstMessage)
+bool OsQueueSendRequest(REQUEST_MESSAGE* pstRequestMessage)
 {
-    if (pPollerToReceiverQueueHandle == NULL)
+    if ((pstRequestMessage == NULL) || (pPollerToReceiverQueueHandle == NULL))
     {
-        return osErrorParameter;
+        return false;
     }
 
-    return osMessageQueuePut(pPollerToReceiverQueueHandle, pstMessage, 0, 0);
+    osStatus_t enStatus = osMessageQueuePut(pPollerToReceiverQueueHandle, 
+        pstRequestMessage, 0, 0);
+
+    return (enStatus == osOK) ? true : false;
 }
 
 //******************************.OsQueueReceiveRequest.************************
 // Purpose : Receives a request message from the PollerToReceiver queue.
-// Inputs  : pstMessage - Pointer to the request message buffer.
-//           ulTimeout  - Timeout value for the receive operation.
+// Inputs  : pstRequestMessage - Pointer to the request message buffer.
+//           ulTimeout         - Timeout value for the receive operation.
 // Outputs : None
-// Return  : osStatus_t - Status of the queue get operation.
-// Notes   : None
+// Return  : true  - if a message was successfully received from the queue.
+//           false - if the queue handle is invalid or receive failed.
+// Notes   : Application layer abstraction; hides RTOS details.
 //*****************************************************************************
-osStatus_t OsQueueReceiveRequest(REQUEST_MESSAGE* pstMessage, uint32 ulTimeout)
+bool OsQueueReceiveRequest(REQUEST_MESSAGE* pstRequestMessage, uint32 ulTimeout)
 {
-    if (pPollerToReceiverQueueHandle == NULL)
+    if ((pstRequestMessage == NULL) || (pPollerToReceiverQueueHandle == NULL))
     {
-        return osErrorParameter;
+        return false;
     }
 
-    return osMessageQueueGet(pPollerToReceiverQueueHandle, pstMessage, NULL, ulTimeout);
+    osStatus_t enStatus = osMessageQueueGet(pPollerToReceiverQueueHandle, 
+        pstRequestMessage, NULL, ulTimeout);
+
+    return (enStatus == osOK) ? true : false;
 }
 
 //******************************.OsQueueSendAck.*******************************
 // Purpose : Sends an acknowledgment message to the ReceiverToPoller queue.
-// Inputs  : pstAck - Pointer to the acknowledgment message.
+// Inputs  : pstAckMessage - Pointer to the acknowledgment message.
 // Outputs : None
-// Return  : osStatus_t - Status of the queue put operation.
-// Notes   : None
+// Return  : true  - if the message was successfully sent to the queue.
+//           false - if the queue handle is invalid or send failed.
+// Notes   : Application layer abstraction; hides RTOS details.
 //*****************************************************************************
-osStatus_t OsQueueSendAck(ACK_MESSAGE* pstAck)
+bool OsQueueSendAck(ACK_MESSAGE* pstAckMessage)
 {
-    if (pReceiverToPollerQueueHandle == NULL)
+    if ((pstAckMessage == NULL) || (pReceiverToPollerQueueHandle == NULL))
     {
-        return osErrorParameter;
+        return false;
     }
 
-    return osMessageQueuePut(pReceiverToPollerQueueHandle, pstAck, 0, 0);
+    osStatus_t enStatus = osMessageQueuePut(pReceiverToPollerQueueHandle, 
+        pstAckMessage, 0, 0);
+
+    return (enStatus == osOK) ? true : false;
 }
 
 //******************************.OsQueueReceiveAck.****************************
 // Purpose : Receives an acknowledgment message from the ReceiverToPoller queue.
-// Inputs  : pstAck   - Pointer to the acknowledgment message buffer.
-//           ulTimeout - Timeout value for the receive operation.
+// Inputs  : pstAckMessage - Pointer to the acknowledgment message buffer.
+//           ulTimeout     - Timeout value for the receive operation.
 // Outputs : None
-// Return  : osStatus_t - Status of the queue get operation.
-// Notes   : None
+// Return  : true  - if a message was successfully received from the queue.
+//           false - if the queue handle is invalid or receive failed.
+// Notes   : Application layer abstraction; hides RTOS details.
 //*****************************************************************************
-osStatus_t OsQueueReceiveAck(ACK_MESSAGE* pstAck, uint32 ulTimeout)
+bool OsQueueReceiveAck(ACK_MESSAGE* pstAckMessage, uint32 ulTimeout)
 {
-    if (pReceiverToPollerQueueHandle == NULL)
+    if ((pstAckMessage == NULL) || (pReceiverToPollerQueueHandle == NULL))
     {
-        return osErrorParameter;
+        return false;
     }
 
-    return osMessageQueueGet(pReceiverToPollerQueueHandle, pstAck, NULL, ulTimeout);
+    osStatus_t enStatus = osMessageQueueGet(pReceiverToPollerQueueHandle, 
+        pstAckMessage, NULL, ulTimeout);
+
+    return (enStatus == osOK) ? true : false;
 }
 
 //EOF
