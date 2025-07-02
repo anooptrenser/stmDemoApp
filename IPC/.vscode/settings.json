@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gpiowrite.h": "c",
+        "osqueue.h": "c",
+        "common.h": "c"
+    }
+}

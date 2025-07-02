@@ -1,5 +1,4 @@
-../Core/Src/appMain/OS/osQueue.c:25:6:OsQueueInit	8	static
-../Core/Src/appMain/OS/osQueue.c:45:12:OsQueueSendRequest	16	static
-../Core/Src/appMain/OS/osQueue.c:58:12:OsQueueReceiveRequest	16	static
-../Core/Src/appMain/OS/osQueue.c:70:12:OsQueueSendAck	16	static
-../Core/Src/appMain/OS/osQueue.c:83:12:OsQueueReceiveAck	16	static
+../Core/Src/appMain/OS/osQueue.c:28:12:OsQueueSendRequest	16	static
+../Core/Src/appMain/OS/osQueue.c:46:12:OsQueueReceiveRequest	16	static
+../Core/Src/appMain/OS/osQueue.c:63:12:OsQueueSendAck	16	static
+../Core/Src/appMain/OS/osQueue.c:81:12:OsQueueReceiveAck	16	static

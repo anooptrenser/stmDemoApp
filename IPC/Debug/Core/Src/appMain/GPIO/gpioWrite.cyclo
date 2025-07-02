@@ -1,4 +1,2 @@
-../Core/Src/appMain/GPIO/gpioWrite.c:22:6:GpioInit	1
-../Core/Src/appMain/GPIO/gpioWrite.c:36:6:GpioWrite	1
-../Core/Src/appMain/GPIO/gpioWrite.c:48:6:GpioToggle	1
-../Core/Src/appMain/GPIO/gpioWrite.c:61:9:GpioRead	1
+../Core/Src/appMain/GPIO/gpioWrite.c:23:6:GpioWrite	1
+../Core/Src/appMain/GPIO/gpioWrite.c:36:9:GpioRead	1

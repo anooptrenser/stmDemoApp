@@ -1,2 +1,6 @@
-../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:30:6:PollerTaskCreate	3
-../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:63:6:PollerTaskRun	9
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:29:6:PollerTaskCreate	2
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:65:6:PollerTaskRun	3
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:102:6:IsButtonStateValid	3
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:113:6:IsButtonPressed	3
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:124:6:PollerButtonPress	7
+../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c:166:6:ProcessAckMessages	2

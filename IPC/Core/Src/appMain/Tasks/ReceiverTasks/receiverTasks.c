@@ -1,14 +1,16 @@
-//**************************** ReceiverTasks ***********************************
+//**************************** ReceiverTasks **********************************
 //  Copyright (c) 2025 Trenser Technology Solutions
 //  All Rights Reserved
 //*****************************************************************************
 //
-//  Summary   : Source file for Receiver Task with function table for CMD handling.
-//  Note      : Follows Trenser Embedded Coding Standard V1.0.
+//  Summary   : Source file for Receiver Task with function table for CMD 
+//              handling.
+//  Note      : None
 //  Author    : Anoop G
 //  Date      : 27/06/2025
 //
 //*****************************************************************************
+
 //******************************* Include Files *******************************
 #include "receiverTasks.h"
 #include "osQueue.h"
@@ -16,20 +18,22 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// Forward declarations for handler functions
-static void HandleCmdGet(const RequestMessage *req, AckMessage *ack);
-static void HandleCmdSet(const RequestMessage *req, AckMessage *ack);
-static void HandleCmdClear(const RequestMessage *req, AckMessage *ack);
+//******************************* Local Function Prototypes *******************
+static void ReceiverCmdGet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck);
+static void ReceiverCmdSet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck);
+static void ReceiverCmdClear(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck);
 
-// Function pointer type for command handlers
-typedef void (*CmdHandler)(const RequestMessage *, AckMessage *);
+static void ProcessReceivedRequest(const REQUEST_MESSAGE* pstReq);
+static void DispatchCommand(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck);
+static void SendAckMessage(const ACK_MESSAGE* pstAck);
 
-// Function table indexed by CommandType
-static CmdHandler cmdHandlerTable[] = {
-    NULL,               // CMD_ACK (not handled as a request)
-    HandleCmdGet,       // CMD_GET
-    HandleCmdSet,       // CMD_SET
-    HandleCmdClear      // CMD_CLEAR
+// Function pointer table for command handlers
+static CMD_HANDLER CmdHandlerTable[] =
+{
+    NULL,           // CMD_ACK (not handled as a request)
+    ReceiverCmdGet,   // CMD_GET
+    ReceiverCmdSet,   // CMD_SET
+    ReceiverCmdClear  // CMD_CLEAR
 };
 
 //******************************.ReceiverTaskCreate.***************************
@@ -43,22 +47,26 @@ static CmdHandler cmdHandlerTable[] = {
 //*****************************************************************************
 bool ReceiverTaskCreate(void)
 {
-    ReceiverToPollerQueueHandle = osMessageQueueNew(
-                                    RECEIVER_TO_POLLER_QUEUE_SIZE,
-                                    sizeof(AckMessage),
-                                    NULL);
-
-    const osThreadAttr_t ReceiverTask_attributes =
+    const osThreadAttr_t ReceiverTaskAttributes =
     {
         .name = "ReceiverTask",
         .stack_size = RECEIVER_TASK_STACK_SIZE,
         .priority = RECEIVER_TASK_PRIORITY,
     };
 
-    osThreadId_t receiverTaskId = osThreadNew(ReceiverTaskRun, NULL, 
-                                                &ReceiverTask_attributes);
+	pReceiverToPollerQueueHandle = osMessageQueueNew(
+        RECEIVER_TO_POLLER_QUEUE_SIZE,
+        sizeof(ACK_MESSAGE),
+        NULL
+    );
 
-    if (NULL == receiverTaskId)
+    osThreadId_t ulReceiverTaskId = osThreadNew(
+        ReceiverTaskRun,
+        NULL,
+        &ReceiverTaskAttributes
+    );
+
+    if (NULL == ulReceiverTaskId)
     {
         printf("Error: Failed to create ReceiverTask thread\r\n");
         return false;
@@ -69,119 +77,159 @@ bool ReceiverTaskCreate(void)
 
 //******************************.ReceiverTaskRun.******************************
 // Purpose : Main execution loop for the Receiver Task.
-// Inputs  : argument - Pointer to arguments (not used in this task)
+// Inputs  : pvArgument - Pointer to arguments (not used in this task)
 // Outputs : None
-// Return  : None (this function runs indefinitely)
-// Notes   : Continuously receives request messages, processes them based on
-//           command type (using a function table), and sends acknowledgment
-//           messages. Logs received commands and errors.
+// Notes   : Receives and processes request messages in a modular way.
 //*****************************************************************************
-void ReceiverTaskRun(void *argument)
+void ReceiverTaskRun(void* pvArgument)
 {
-    RequestMessage receivedRequest;
-    osStatus_t status;
-
     printf("ReceiverTask started\r\n");
 
     for (;;)
     {
-        status = OsQueueReceiveRequest(&receivedRequest, osWaitForever);
+        REQUEST_MESSAGE stReceivedRequest;
+        osStatus_t status = OsQueueReceiveRequest(&stReceivedRequest, osWaitForever);
 
         if (osOK == status)
         {
-            printf("Received request - UID: %lu, CMD: %d, DATA: 0x%08lX\r\n",
-                   receivedRequest.uid, receivedRequest.cmd, receivedRequest.data);
-
-            AckMessage ack =
-            {
-                .uid = receivedRequest.uid,
-                .cmd = CMD_ACK,
-                .state = STATE_OK,
-                .data = 0
-            };
-
-            // Use function table for command dispatch
-            if (receivedRequest.cmd < (sizeof(cmdHandlerTable)/sizeof(cmdHandlerTable[0]))
-                && cmdHandlerTable[receivedRequest.cmd] != NULL)
-            {
-                cmdHandlerTable[receivedRequest.cmd](&receivedRequest, &ack);
-            }
-            else
-            {
-                ack.state = STATE_ERROR;
-                printf("Unknown CMD received: %d\r\n", receivedRequest.cmd);
-            }
-
-            if (osOK != OsQueueSendAck(&ack))
-            {
-                printf("Error: Failed to send acknowledgment message\r\n");
-            }
+            ProcessReceivedRequest(&stReceivedRequest);
         }
         else
         {
-            printf("Error: Failed to receive request message (status: %d)\r\n", 
-                                                                        status);
+            printf("Error: Failed to receive request message (status: %d)\r\n",
+                             status);
         }
     }
 }
 
-//******************************.HandleCmdGet.*********************************
-// Purpose : Handles the CMD_GET command.
-// Inputs  : req - Pointer to the received RequestMessage
-//           ack - Pointer to the AcknowledgmentMessage to be populated
-// Outputs : Populates the 'ack->data' with the current LED state.
-// Return  : None
-// Notes   : Reads the current state of the LED_PIN and sets it in the
-//           acknowledgment message. Prints the LED state.
+//******************************.ProcessReceivedRequest.************************
+// Purpose : Processes a received request message.
+// Inputs  : pstReq - Pointer to the received REQUEST_MESSAGE
+// Outputs : None
 //*****************************************************************************
-static void HandleCmdGet(const RequestMessage *req, AckMessage *ack)
+static void ProcessReceivedRequest(const REQUEST_MESSAGE* pstReq)
 {
-    uint8_t ledState = GpioRead(LED_PIN, LED_PORT);
-    ack->data = ledState;
-    printf("CMD_GET: LED state is %u\r\n", ledState);
+    ACK_MESSAGE stAck =
+    {
+        .ulUid = pstReq->ulUid,
+        .ucCmd = CMD_ACK,
+        .ucState = STATE_OK,
+        .ulData = 0
+    };
+
+	printf("Received request - UID: %lu, CMD: %d, DATA: 0x%08lX\r\n",
+        pstReq->ulUid, pstReq->ucCmd, pstReq->ulData);
+
+    DispatchCommand(pstReq, &stAck);
+    SendAckMessage(&stAck);
 }
 
-//******************************.HandleCmdSet.*********************************
-// Purpose : Handles the CMD_SET command.
-// Inputs  : req - Pointer to the received RequestMessage
-//           ack - Pointer to the AcknowledgmentMessage to be populated
-// Outputs : Controls the LED state and populates 'ack->data' with the
-//           new LED state.
-// Return  : None
-// Notes   : Sets the LED_PIN state (ON/OFF) based on 'req->data'.
-//           If 'req->data' is non-zero, LED is turned ON; otherwise, OFF.
-//           Prints the action taken.
+//******************************.DispatchCommand.******************************
+// Purpose : Dispatches the command to the appropriate handler using the
+//           function table.
+// Inputs  : pstReq - Pointer to the received REQUEST_MESSAGE
+//           pstAck - Pointer to the ACK_MESSAGE to be populated
+// Outputs : Populates the ACK_MESSAGE based on command handling.
 //*****************************************************************************
-static void HandleCmdSet(const RequestMessage *req, AckMessage *ack)
+static void DispatchCommand(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
 {
-    // If data==1, turn ON; if data==0, turn OFF
-    if (req->data)
+    uint8 ucCmdIndex = pstReq->ucCmd;
+
+    if (pstReq == NULL || pstAck == NULL)
+    {
+        printf("Error: Null pointer received in DispatchCommand\r\n");
+        pstAck->ucState = STATE_ERROR;
+        return;
+    }
+
+    if (ucCmdIndex < (sizeof(CmdHandlerTable) / sizeof(CmdHandlerTable[0])) &&
+        CmdHandlerTable[ucCmdIndex] != NULL)
+    {
+        CmdHandlerTable[ucCmdIndex](pstReq, pstAck);
+    }
+    else
+    {
+        pstAck->ucState = STATE_ERROR;
+        printf("Unknown CMD received: %d\r\n", pstReq->ucCmd);
+    }
+}
+
+//******************************.SendAckMessage.*******************************
+// Purpose : Sends the acknowledgment message to the queue.
+// Inputs  : pstAck - Pointer to the ACK_MESSAGE to be sent
+// Outputs : None
+//*****************************************************************************
+static void SendAckMessage(const ACK_MESSAGE* pstAck)
+{
+    if (osOK != OsQueueSendAck((ACK_MESSAGE*)pstAck))
+    {
+        printf("Error: Failed to send acknowledgment message\r\n");
+    }
+}
+
+//******************************.ReceiverCmdGet.*******************************
+// Purpose : Handles the CMD_GET command.
+// Inputs  : pstReq - Pointer to the received REQUEST_MESSAGE
+//           pstAck - Pointer to the ACK_MESSAGE to be populated
+// Outputs : Populates the 'pstAck->ulData' with the current LED state.
+//*****************************************************************************
+static void ReceiverCmdGet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
+{
+    (void)pstReq; // Unused parameter
+
+    if (pstAck == NULL)
+    {
+        printf("Error: Null pointer received in HandleCmdGet\r\n");
+        return;
+    }
+
+    uint8 ucLedState = GpioRead(LED_PIN, LED_PORT);
+    pstAck->ulData = ucLedState;
+    printf("CMD_GET: LED state is %u\r\n", ucLedState);
+}
+
+//******************************.ReceiverCmdSet.*******************************
+// Purpose : Handles the CMD_SET command.
+// Inputs  : pstReq - Pointer to the received REQUEST_MESSAGE
+//           pstAck - Pointer to the ACK_MESSAGE to be populated
+// Outputs : Controls the LED state and populates 'pstAck->ulData' with the 
+//           new LED state.
+//*****************************************************************************
+static void ReceiverCmdSet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
+{
+    if (pstReq->ulData)
     {
         GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_SET);
-        ack->data = 1;
+        pstAck->ulData = 1;
         printf("CMD_SET: LED set to ON\r\n");
     }
     else
     {
         GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_RESET);
-        ack->data = 0;
+        pstAck->ulData = 0;
         printf("CMD_SET: LED set to OFF\r\n");
     }
 }
 
-//******************************.HandleCmdClear.*******************************
+//******************************.ReceiverCmdClear.*****************************
 // Purpose : Handles the CMD_CLEAR command.
-// Inputs  : req - Pointer to the received RequestMessage 
-//           ack - Pointer to the AcknowledgmentMessage to be populated
-// Outputs : Turns off the LED and populates 'ack->data' with the new LED state.
-// Return  : None
-// Notes   : Resets (turns OFF) the LED_PIN regardless of the input data.
-//           Prints the action taken.
+// Inputs  : pstReq - Pointer to the received REQUEST_MESSAGE
+//           pstAck - Pointer to the ACK_MESSAGE to be populated
+// Outputs : Turns off the LED and populates 'pstAck->ulData' with the new 
+//           LED state.
 //*****************************************************************************
-static void HandleCmdClear(const RequestMessage *req, AckMessage *ack)
+static void ReceiverCmdClear(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
 {
+    (void)pstReq; // Unused parameter
+
+    if (pstAck == NULL)
+    {
+        printf("Error: Null pointer received in HandleCmdClear\r\n");
+        return;
+    }
+
     GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_RESET);
-    ack->data = 0;
+    pstAck->ulData = 0;
     printf("CMD_CLEAR: LED set to OFF\r\n");
 }
 

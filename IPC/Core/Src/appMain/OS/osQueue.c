@@ -4,66 +4,88 @@
 //*****************************************************************************
 //
 //  Summary   : Source file for OS queue wrapper functions.
-//  Note      : Follows Trenser Embedded Coding Standard V1.0.
+//  Note      : None
 //  Author    : Anoop G
 //  Date      : 27/06/2025
 //
 //*****************************************************************************
+
 //******************************* Include Files *******************************
 #include "osQueue.h"
 #include "cmsis_os2.h"
 
-osMessageQueueId_t PollerToReceiverQueueHandle;
-osMessageQueueId_t ReceiverToPollerQueueHandle;
+//******************************* Global Variables ****************************
+osMessageQueueId_t pPollerToReceiverQueueHandle = NULL;
+osMessageQueueId_t pReceiverToPollerQueueHandle = NULL;
 
 //******************************.OsQueueSendRequest.***************************
 // Purpose : Sends a request message to the PollerToReceiver queue.
-// Inputs  : msg - Pointer to the request message.
+// Inputs  : pstMessage - Pointer to the request message.
 // Outputs : None
 // Return  : osStatus_t - Status of the queue put operation.
 // Notes   : None
 //*****************************************************************************
-osStatus_t OsQueueSendRequest(RequestMessage *msg)
+osStatus_t OsQueueSendRequest(REQUEST_MESSAGE* pstMessage)
 {
-    return osMessageQueuePut(PollerToReceiverQueueHandle, msg, 0, 0);
+    if (pPollerToReceiverQueueHandle == NULL)
+    {
+        return osErrorParameter;
+    }
+
+    return osMessageQueuePut(pPollerToReceiverQueueHandle, pstMessage, 0, 0);
 }
 
 //******************************.OsQueueReceiveRequest.************************
 // Purpose : Receives a request message from the PollerToReceiver queue.
-// Inputs  : msg     - Pointer to the request message buffer.
-//           timeout - Timeout value for the receive operation.
+// Inputs  : pstMessage - Pointer to the request message buffer.
+//           ulTimeout  - Timeout value for the receive operation.
 // Outputs : None
 // Return  : osStatus_t - Status of the queue get operation.
 // Notes   : None
 //*****************************************************************************
-osStatus_t OsQueueReceiveRequest(RequestMessage *msg, uint32_t timeout)
+osStatus_t OsQueueReceiveRequest(REQUEST_MESSAGE* pstMessage, uint32 ulTimeout)
 {
-    return osMessageQueueGet(PollerToReceiverQueueHandle, msg, NULL, timeout);
+    if (pPollerToReceiverQueueHandle == NULL)
+    {
+        return osErrorParameter;
+    }
+
+    return osMessageQueueGet(pPollerToReceiverQueueHandle, pstMessage, NULL, ulTimeout);
 }
 
 //******************************.OsQueueSendAck.*******************************
 // Purpose : Sends an acknowledgment message to the ReceiverToPoller queue.
-// Inputs  : msg - Pointer to the acknowledgment message.
+// Inputs  : pstAck - Pointer to the acknowledgment message.
 // Outputs : None
 // Return  : osStatus_t - Status of the queue put operation.
 // Notes   : None
 //*****************************************************************************
-osStatus_t OsQueueSendAck(AckMessage *msg)
+osStatus_t OsQueueSendAck(ACK_MESSAGE* pstAck)
 {
-    return osMessageQueuePut(ReceiverToPollerQueueHandle, msg, 0, 0);
+    if (pReceiverToPollerQueueHandle == NULL)
+    {
+        return osErrorParameter;
+    }
+
+    return osMessageQueuePut(pReceiverToPollerQueueHandle, pstAck, 0, 0);
 }
 
 //******************************.OsQueueReceiveAck.****************************
 // Purpose : Receives an acknowledgment message from the ReceiverToPoller queue.
-// Inputs  : msg     - Pointer to the acknowledgment message buffer.
-//           timeout - Timeout value for the receive operation.
+// Inputs  : pstAck   - Pointer to the acknowledgment message buffer.
+//           ulTimeout - Timeout value for the receive operation.
 // Outputs : None
 // Return  : osStatus_t - Status of the queue get operation.
 // Notes   : None
 //*****************************************************************************
-osStatus_t OsQueueReceiveAck(AckMessage *msg, uint32_t timeout)
+osStatus_t OsQueueReceiveAck(ACK_MESSAGE* pstAck, uint32 ulTimeout)
 {
-    return osMessageQueueGet(ReceiverToPollerQueueHandle, msg, NULL, timeout);
+    if (pReceiverToPollerQueueHandle == NULL)
+    {
+        return osErrorParameter;
+    }
+
+    return osMessageQueueGet(pReceiverToPollerQueueHandle, pstAck, NULL, ulTimeout);
 }
 
 //EOF

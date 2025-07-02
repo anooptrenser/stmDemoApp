@@ -1,5 +1,8 @@
-../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:36:6:ReceiverTaskCreate	48	static
-../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:57:6:ReceiverTaskRun	48	static
-../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:106:13:HandleCmdGet	24	static
-../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:114:13:HandleCmdSet	16	static
-../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:132:13:HandleCmdClear	16	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:47:6:ReceiverTaskCreate	48	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:83:6:ReceiverTaskRun	32	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:108:13:ProcessReceivedRequest	32	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:131:13:DispatchCommand	24	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:159:13:SendAckMessage	16	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:173:13:ReceiverCmdGet	24	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:194:13:ReceiverCmdSet	16	static
+../Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.c:216:13:ReceiverCmdClear	16	static

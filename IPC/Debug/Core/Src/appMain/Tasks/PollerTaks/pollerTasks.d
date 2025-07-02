@@ -2,8 +2,9 @@ Core/Src/appMain/Tasks/PollerTaks/pollerTasks.o: \
  ../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.c \
  ../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/OS/osQueue.h \
- C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/GPIO/gpioWrite.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/common.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/OS/osQueue.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/GPIO/gpioWrite.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -32,8 +33,9 @@ Core/Src/appMain/Tasks/PollerTaks/pollerTasks.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 ../Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
-C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/OS/osQueue.h:
-C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/GPIO/gpioWrite.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/common.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/OS/osQueue.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/GPIO/gpioWrite.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:

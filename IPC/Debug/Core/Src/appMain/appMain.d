@@ -26,10 +26,11 @@ Core/Src/appMain/appMain.o: ../Core/Src/appMain/appMain.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/OS/osQueue.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h \
- C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.h
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/common.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.h \
+ C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/OS/osQueue.h
 ../Core/Src/appMain/appMain.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -57,7 +58,8 @@ Core/Src/appMain/appMain.o: ../Core/Src/appMain/appMain.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/OS/osQueue.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
-C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/Tasks/PollerTaks/pollerTasks.h:
-C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC_Free-Rtos/Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/common.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/Tasks/ReceiverTasks/receiverTasks.h:
+C:/Users/1786/STM32CubeIDE/workspace_1.18.1/IPC/Core/Src/appMain/OS/osQueue.h:
