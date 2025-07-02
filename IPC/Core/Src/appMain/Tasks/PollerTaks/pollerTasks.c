@@ -62,7 +62,7 @@ bool PollerTaskCreate(void)
 // Outputs : None
 // Notes   : Calls helper routines for button polling and ACK processing.
 //*****************************************************************************
-void PollerTaskRun(void* argument)
+void PollerTaskRun(void* pArgument)
 {
     uint32 ulLastButtonState    = BUTTON_RELEASED_STATE;
     uint32 ulCurrentButtonState = BUTTON_RELEASED_STATE;
@@ -74,7 +74,7 @@ void PollerTaskRun(void* argument)
 
     for (;;)
     {
-        ulCurrentButtonState = GpioRead(USER_BUTTON_PIN, USER_BUTTON_PORT);
+        ulCurrentButtonState = GpioRead(GPIO_PORT_C, LED_PIN_13);
 
         if (!IsButtonStateValid(ulCurrentButtonState))
         {

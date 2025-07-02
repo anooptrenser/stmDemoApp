@@ -27,7 +27,7 @@ extern const osThreadAttr_t PollerTaskAttributes;
 
 //******************************* Function Prototypes *************************
 bool PollerTaskCreate(void);
-void PollerTaskRun(void* argument);
+void PollerTaskRun(void* pArgument);
 bool IsButtonStateValid(uint32 ulButtonState);
 bool IsButtonPressed(uint32 ulLastState, uint32 ulCurrentState);
 void PollerButtonPress(uint32* pulTransactionUid, uint8* pucLedOn, uint8* pucToggle);

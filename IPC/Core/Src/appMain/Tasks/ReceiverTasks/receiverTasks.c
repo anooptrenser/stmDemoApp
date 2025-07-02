@@ -81,7 +81,7 @@ bool ReceiverTaskCreate(void)
 // Outputs : None
 // Notes   : Receives and processes request messages in a modular way.
 //*****************************************************************************
-void ReceiverTaskRun(void* pvArgument)
+void ReceiverTaskRun(void* pArgument)
 {
     printf("ReceiverTask started\r\n");
 
@@ -183,7 +183,7 @@ static void ReceiverCmdGet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
         return;
     }
 
-    uint8 ucLedState = GpioRead(LED_PIN, LED_PORT);
+    uint8 ucLedState = GpioRead(GPIO_PORT_C, LED_PIN_13);
     pstAck->ulData = ucLedState;
     printf("CMD_GET: LED state is %u\r\n", ucLedState);
 }
@@ -199,13 +199,13 @@ static void ReceiverCmdSet(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
 {
     if (pstReq->ulData)
     {
-        GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_SET);
+        GpioWrite(GPIO_PORT_B, LED_PIN_0, GPIO_PIN_SET);
         pstAck->ulData = 1;
         printf("CMD_SET: LED set to ON\r\n");
     }
     else
     {
-        GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_RESET);
+        GpioWrite(GPIO_PORT_B, LED_PIN_0, GPIO_PIN_RESET);
         pstAck->ulData = 0;
         printf("CMD_SET: LED set to OFF\r\n");
     }
@@ -228,7 +228,7 @@ static void ReceiverCmdClear(const REQUEST_MESSAGE* pstReq, ACK_MESSAGE* pstAck)
         return;
     }
 
-    GpioWrite(LED_PIN, LED_PORT, GPIO_PIN_RESET);
+    GpioWrite(GPIO_PORT_B, LED_PIN_0, GPIO_PIN_RESET);
     pstAck->ulData = 0;
     printf("CMD_CLEAR: LED set to OFF\r\n");
 }

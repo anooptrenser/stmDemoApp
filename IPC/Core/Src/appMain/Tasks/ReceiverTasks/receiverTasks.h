@@ -28,7 +28,7 @@ typedef void (*CMD_HANDLER)(const REQUEST_MESSAGE*, ACK_MESSAGE*);
 
 //******************************* Function Prototypes *************************
 bool ReceiverTaskCreate(void);
-void ReceiverTaskRun(void* pvArgument);
+void ReceiverTaskRun(void* pArgument);
 
 
 #endif /* RECEIVERTASK_H */
