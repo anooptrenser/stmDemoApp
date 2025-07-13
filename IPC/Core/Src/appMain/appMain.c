@@ -23,11 +23,11 @@
 //*****************************************************************************
 void AppMain(void)
 {
-    for (size_t i = 0; i < TASK_COUNT; ++i)
+    for (int8 i = 0; i < TASK_COUNT; ++i)
     {
         if (!taskCreateTable[i]())
         {
-            printf("Error: Task %zu creation failed\r\n", i);
+            printf("Error: Task %d creation failed\r\n", i);
             return;
         }
     }

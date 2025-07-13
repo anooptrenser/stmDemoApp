@@ -35,7 +35,7 @@ bool OsQueueSendRequest(REQUEST_MESSAGE* pstRequestMessage)
     }
 
     osStatus_t enStatus = osMessageQueuePut(pPollerToReceiverQueueHandle, 
-        pstRequestMessage, 0, 0);
+                                            pstRequestMessage, 0, 0);
 
     return (enStatus == osOK) ? true : false;
 }
@@ -57,7 +57,7 @@ bool OsQueueReceiveRequest(REQUEST_MESSAGE* pstRequestMessage, uint32 ulTimeout)
     }
 
     osStatus_t enStatus = osMessageQueueGet(pPollerToReceiverQueueHandle, 
-        pstRequestMessage, NULL, ulTimeout);
+                                            pstRequestMessage, NULL, ulTimeout);
 
     return (enStatus == osOK) ? true : false;
 }
@@ -78,7 +78,7 @@ bool OsQueueSendAck(ACK_MESSAGE* pstAckMessage)
     }
 
     osStatus_t enStatus = osMessageQueuePut(pReceiverToPollerQueueHandle, 
-        pstAckMessage, 0, 0);
+                                            pstAckMessage, 0, 0);
 
     return (enStatus == osOK) ? true : false;
 }
@@ -100,7 +100,7 @@ bool OsQueueReceiveAck(ACK_MESSAGE* pstAckMessage, uint32 ulTimeout)
     }
 
     osStatus_t enStatus = osMessageQueueGet(pReceiverToPollerQueueHandle, 
-        pstAckMessage, NULL, ulTimeout);
+                                            pstAckMessage, NULL, ulTimeout);
 
     return (enStatus == osOK) ? true : false;
 }

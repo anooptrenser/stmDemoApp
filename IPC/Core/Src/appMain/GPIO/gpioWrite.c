@@ -32,11 +32,16 @@ static GPIO_TypeDef* pstGetHalPort(GPIO_PORT enPort)
 {
     switch (enPort)
     {
-        case GPIO_PORT_A: return GPIOA;
-        case GPIO_PORT_B: return GPIOB;
-        case GPIO_PORT_C: return GPIOC;
-        case GPIO_PORT_D: return GPIOD;
-        case GPIO_PORT_E: return GPIOE;
+        case GPIO_PORT_A: 
+            return GPIOA;
+        case GPIO_PORT_B: 
+            return GPIOB;
+        case GPIO_PORT_C:
+            return GPIOC;
+        case GPIO_PORT_D:
+            return GPIOD;
+        case GPIO_PORT_E:
+            return GPIOE;
         default:
             printf("GpioWrite: Invalid port enum: %d\n", (int)enPort);
             return NULL;
