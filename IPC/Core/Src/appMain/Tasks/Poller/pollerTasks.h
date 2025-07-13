@@ -21,6 +21,7 @@
 #define POLLER_TASK_STACK_SIZE    (128 * 8)
 #define POLLER_TASK_DELAY_MS      (10)
 #define POLLER_TASK_PRIORITY      (osPriorityHigh)
+#define LED_ON                    1
 
 //******************************* Global Variables ****************************
 extern const osThreadAttr_t PollerTaskAttributes;

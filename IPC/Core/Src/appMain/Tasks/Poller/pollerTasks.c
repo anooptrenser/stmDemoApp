@@ -66,8 +66,8 @@ void PollerTaskRun(void* pArgument)
     uint32 ulLastButtonState    = BUTTON_RELEASED_STATE;
     uint32 ulCurrentButtonState = BUTTON_RELEASED_STATE;
     static uint32 ulTransactionUid = 0;
-    static uint8 ucLedOn        = 0;
-    static uint8 ucToggle       = 0;
+    static uint8 ucLedOn        = LED_ON;
+    static uint8 ucToggle       = LED_ON;
 
     printf("PollerTask started\r\n");
 
