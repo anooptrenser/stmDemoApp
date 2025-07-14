@@ -14,7 +14,10 @@
 #ifndef DATASENDER_H
 #define DATASENDER_H
 
+//*********************Include Files*******************************************
+#include <stdbool.h>
+
 //*********************Forward Declarations************************************
-void DataSender(void);
+bool DataSender(void);
 
 #endif // DATASENDER_H

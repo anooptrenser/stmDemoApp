@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include "common.h"
 #include "tmp.h"
-
+#include <stdio.h>
 //*********************Local Constants*****************************************
 #define DATA_SENDER_TIMEOUT_MS    2000U
 
@@ -34,16 +34,27 @@ static bool DataSenderSendChunks(const uint8* pucData, uint32 ulLen, uint32 ulMa
 //Return  : None
 //Notes   : None
 //*****************************************************************************
-void DataSender(void)
+bool DataSender(void)
 {
     uint32 ulMaxChunk = 0U;
+    bool blStatus = false;
 
-    if(DataSenderAnnounceFileLength(g_ulJsonLen, &ulMaxChunk))
+    // Announce file length and get max chunk size from receiver
+    blStatus = DataSenderAnnounceFileLength(g_ulJsonLen, &ulMaxChunk);
+    if (!blStatus)
     {
-        (void)DataSenderSendChunks(g_pucJson, g_ulJsonLen, ulMaxChunk);
+        printf("Error: DataSenderAnnounceFileLength failed\r\n");
+        return false;
+    }
+
+    // Send data in chunks and check for errors
+    blStatus = DataSenderSendChunks(g_pucJson, g_ulJsonLen, ulMaxChunk);
+    if (!blStatus)
+    {
+    	printf("Error: DataSenderSendChunks failed\r\n");
+        return false;
     }
 }
-
 //*********************.DataSenderAnnounceFileLength.**************************
 //Purpose :	Send file length to receiver and get max chunk size
 //Inputs  : ulFileLen - Length of file/data to send
@@ -96,15 +107,21 @@ static bool DataSenderAnnounceFileLength(uint32 ulFileLen, uint32* pulMaxChunk)
 //          ulMaxChunk - Max chunk size allowed by receiver
 //Outputs : None
 //Return  : TRUE if all chunks sent and acknowledged, FALSE if error
-//Notes   : None
+//Notes   : Handles all error conditions and reports failures
 //*****************************************************************************
 static bool DataSenderSendChunks(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
 {
     uint32 ulOffset = 0U;
     uint32 ulSeqNum = 1U; // Start sequence number from 1
-    bool blStatus = true;
+    bool blStatus = false; // Initialize to false
 
-    while(ulOffset < ulLen)
+    if ((pucData == NULL) || (ulLen == 0) || (ulMaxChunk == 0))
+    {
+        // Invalid parameters
+        return false;
+    }
+
+    while (ulOffset < ulLen)
     {
         uint32 ulChunk = (ulLen - ulOffset > ulMaxChunk) ? ulMaxChunk : (ulLen - ulOffset);
         DATA_FRAME stData = {0};
@@ -115,25 +132,28 @@ static bool DataSenderSendChunks(const uint8* pucData, uint32 ulLen, uint32 ulMa
         stData.pucValue = (uint8*)&pucData[ulOffset];
         stData.ucChecksum = DataCalcChecksum(stData.pucValue, ulChunk);
 
-        if(!DataSendFrame(&stData))
+        if (!DataSendFrame(&stData))
         {
-            blStatus = false;
-            break;
+        	printf("Error: DataSendFrame failed at chunk %lu\r\n", ulSeqNum);
+            return false;
         }
 
-        // Wait for ACK (optional, base case can skip or add as needed)
+        // Optional: Wait for ACK from receiver and check for errors
         // DATA_FRAME stAck = {0};
         // uint8 ucAckVal[1];
-        // if(!DataReceiveFrame(&stAck, ucAckVal, sizeof(ucAckVal), 1000U) || ucAckVal[0] != 0x00)
+        // if (!DataReceiveFrame(&stAck, ucAckVal, sizeof(ucAckVal), 1000U) || ucAckVal[0] != 0x00)
         // {
-        //     blStatus = false;
-        //     break;
+        //     // Error: did not receive valid ACK
+        //     return false;
         // }
 
         ulOffset += ulChunk;
         ulSeqNum++; // Increment sequence number for each chunk
     }
+
+    blStatus = true; // Only set to true if all chunks sent successfully
     return blStatus;
 }
+
 
 //EOF

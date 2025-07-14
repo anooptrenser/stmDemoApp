@@ -14,6 +14,7 @@
 //*********************Include Files*******************************************
 #include "AppMain.h"
 #include "DataSender.h"
+#include <stdio.h>
 
 //*********************.AppMain.**********************************************
 //Purpose : Entry point for the application
@@ -24,7 +25,11 @@
 //*****************************************************************************
 void AppMain(void)
 {
-    DataSender(); // All protocol logic is inside DataSender()
+    if (!DataSender())
+       {
+           printf("Error: DataSenderAnnounceFileLength failed\r\n");
+           return;
+       }
 }
 
 //EOF
