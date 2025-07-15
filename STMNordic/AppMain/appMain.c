@@ -27,7 +27,7 @@ void AppMain(void)
 {
     if (!DataSender())
        {
-           printf("Error: DataSenderAnnounceFileLength failed\r\n");
+           printf("Error: DataSend\r\n");
            return;
        }
 }
