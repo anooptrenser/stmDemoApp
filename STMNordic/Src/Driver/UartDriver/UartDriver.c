@@ -12,9 +12,9 @@
 //*****************************************************************************
 
 //*********************Include Files*******************************************
+#include <common.h>
 #include "UartDriver.h"
 #include "main.h"
-#include "common.h"
 
 extern UART_HandleTypeDef huart2;
 

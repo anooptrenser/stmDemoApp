@@ -14,7 +14,7 @@
 #include <string.h>
 
 //*********************Local Variables*****************************************
-const uint8 g_pucJson[] = "{\"temp\":23,\"hum\":60,\"status\":\"ok\"}";
-const uint32 g_ulJsonLen = sizeof(g_pucJson) - 1U;
+const uint8 g_ucData[] = "{\"temp\":23,\"hum\":60,\"status\":\"ok\"}";
+const uint32 g_ulDataLen = sizeof(g_ucData) - 1U;
 
 //EOF

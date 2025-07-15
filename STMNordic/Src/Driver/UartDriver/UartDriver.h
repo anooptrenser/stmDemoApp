@@ -15,9 +15,8 @@
 #define UARTDRIVER_H
 
 //*********************Include Files*******************************************
+#include <common.h>
 #include <stdbool.h>
-#include "DataFrame.h"
-#include "common.h"
 
 //***************************** Global Constants *******************************
 #define TIMEOUT 1000

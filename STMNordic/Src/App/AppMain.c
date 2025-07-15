@@ -13,7 +13,7 @@
 
 //*********************Include Files*******************************************
 #include "AppMain.h"
-#include "DataSender.h"
+#include "FileTransferManager.h"
 #include <stdio.h>
 
 //*********************.AppMain.**********************************************
@@ -25,7 +25,7 @@
 //*****************************************************************************
 void AppMain(void)
 {
-    if (!DataSender())
+    if (!FileTransferManager())
        {
            printf("Error: DataSend failed\r\n");
            return;
