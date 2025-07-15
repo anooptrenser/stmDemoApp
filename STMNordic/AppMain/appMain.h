@@ -18,3 +18,5 @@
 void AppMain(void);
 
 #endif // APPMAIN_H
+
+//EOF

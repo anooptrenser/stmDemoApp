@@ -13,22 +13,10 @@
 
 //*********************Include Files*******************************************
 #include "UartDriver.h"
-#include "main.h" //
+#include "main.h"
 #include "common.h"
 
 extern UART_HandleTypeDef huart2;
-
-//*********************.UartInit.**********************************************
-//Purpose : UART initialization (already done in main.c)
-//Inputs  : None
-//Outputs : None
-//Return  : None
-//Notes   : None
-//*****************************************************************************
-void UartInit(void)
-{
-    // UART2 already initialized in main.c
-}
 
 //*********************.UartSend.**********************************************
 //Purpose : Send data over UART
@@ -40,7 +28,7 @@ void UartInit(void)
 //*****************************************************************************
 bool UartSend(const uint8* pucData, uint32 ulLen)
 {
-    return (HAL_UART_Transmit(&huart2, (uint8*)pucData, ulLen, 1000) == HAL_OK);
+    return (HAL_UART_Transmit(&huart2, (uint8*)pucData, ulLen, TIMEOUT) == HAL_OK);
 }
 
 //*********************.UartReceive.*******************************************

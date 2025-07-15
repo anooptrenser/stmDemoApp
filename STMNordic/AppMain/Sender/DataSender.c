@@ -1,17 +1,17 @@
-//*******************************DataSender************************************
-//Copyright (c) 2025 Trenser Technology Solutions
-//All Rights Reserved
-//*****************************************************************************
+//******************************* DataSender ***********************************
+// Copyright (c) 2025 Trenser Technology Solutions
+// All Rights Reserved
+// *****************************************************************************
 //
-//File     : DataSender.c
-//Summary  : Implements TLV protocol sender for UART file transfer with sequence number
-//Note     : None
-//Author   : Anoop G
-//Date     : 14-07-2025
+// File     : DataSender.c
+// Summary  : Implements TLV protocol sender for UART file transfer with sequence number
+// Note     : None
+// Author   : Anoop G
+// Date     : 14-07-2025
 //
-//*****************************************************************************
+// *****************************************************************************
 
-//*********************Include Files*******************************************
+//********************* Include Files *******************************************
 #include "DataSender.h"
 #include "DataFrame.h"
 #include "UartDriver.h"
@@ -20,140 +20,169 @@
 #include "common.h"
 #include "tmp.h"
 #include <stdio.h>
-//*********************Local Constants*****************************************
-#define DATA_SENDER_TIMEOUT_MS    2000U
+#include <stddef.h>
 
-//*********************Local Functions*****************************************
-static bool DataSenderAnnounceFileLength(uint32 ulFileLen, uint32* pulMaxChunk);
-static bool DataSenderSendChunks(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk);
+//********************* Local Function Declarations *****************************
+static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk);
+static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk);
 
-//*********************.DataSender.********************************************
-//Purpose :	Top-level function to perform TLV file transfer over UART
-//Inputs  : None
-//Outputs : None
-//Return  : None
-//Notes   : None
-//*****************************************************************************
+//********************* .DataSender *********************************************
+// Purpose : Top-level function to perform TLV file transfer over UART
+// Inputs  : None
+// Outputs : TRUE on success, FALSE on error
+// Return  : bool
+// Notes   : Application entry point for sender
+// *****************************************************************************
 bool DataSender(void)
 {
     uint32 ulMaxChunk = 0U;
     bool blStatus = false;
 
-    // Announce file length and get max chunk size from receiver
-    blStatus = DataSenderAnnounceFileLength(g_ulJsonLen, &ulMaxChunk);
-    if (!blStatus)
-    {
-        printf("Error: DataSenderAnnounceFileLength failed\r\n");
-        return false;
-    }
+    // Step 1: Announce file length and get max chunk size from receiver
+    blStatus = InitFileTransfer(g_ulJsonLen, &ulMaxChunk);
 
-    // Send data in chunks and check for errors
-    blStatus = DataSenderSendChunks(g_pucJson, g_ulJsonLen, ulMaxChunk);
     if (!blStatus)
     {
-    	printf("Error: DataSenderSendChunks failed\r\n");
-        return false;
+        printf("Error: InitFileTransfer failed\r\n");
     }
+    else
+    {
+        // Step 2: Send file data in chunks
+        blStatus = FileTransfer(g_pucJson, g_ulJsonLen, ulMaxChunk);
+
+        if (!blStatus)
+        {
+            printf("Error: FileTransfer failed\r\n");
+        }
+    }
+    return blStatus;
 }
-//*********************.DataSenderAnnounceFileLength.**************************
-//Purpose :	Send file length to receiver and get max chunk size
-//Inputs  : ulFileLen - Length of file/data to send
-//          pulMaxChunk - Pointer to store max chunk size from receiver
-//Outputs : None
-//Return  : TRUE if success, FALSE if error
-//Notes   : None
-//*****************************************************************************
-static bool DataSenderAnnounceFileLength(uint32 ulFileLen, uint32* pulMaxChunk)
+
+//********************* .InitFileTransfer **************************************
+// Purpose : Send file length to receiver and get max chunk size
+// Inputs  : ulFileLen   - Length of file/data to send
+//           pulMaxChunk - Pointer to store max chunk size from receiver
+// Outputs : TRUE on success, FALSE on error
+// Notes   : Handles all error conditions and returns only at end
+// *****************************************************************************
+static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk)
 {
     DATA_FRAME stAnnounce = {0};
-    uint8 ucFileLen[4];
-    uint8 ucRespVal[4];
     DATA_FRAME stResp = {0};
+    uint8 ucFileLen[FILE_LEN_BYTES] = {0};
+    uint8 ucRespVal[FILE_LEN_BYTES] = {0};
     bool blStatus = false;
+    bool blSendResult = false;
+    bool blRecvResult = false;
+    bool blValidResp = false;
 
-    ucFileLen[0] = (uint8)((ulFileLen >> 0) & 0xFF);
-    ucFileLen[1] = (uint8)((ulFileLen >> 8) & 0xFF);
-    ucFileLen[2] = (uint8)((ulFileLen >> 16) & 0xFF);
-    ucFileLen[3] = (uint8)((ulFileLen >> 24) & 0xFF);
-
-    stAnnounce.ucCmd = CMD_ANNOUNCE;
-    stAnnounce.ucType = TYPE_FILE_LENGTH;
-    stAnnounce.ulLength = 4U;
-    stAnnounce.ulSeqNum = 0U; // Sequence number not used for announce
-    stAnnounce.pucValue = ucFileLen;
-    stAnnounce.ucChecksum = DataCalcChecksum(ucFileLen, 4U);
-
-    if(DataSendFrame(&stAnnounce))
+    // Input parameter validation
+    if (pulMaxChunk != NULL)
     {
-        if(DataReceiveFrame(&stResp, ucRespVal, sizeof(ucRespVal), DATA_SENDER_TIMEOUT_MS))
+        // Encode file length as byte array (little endian)
+        memcpy(ucFileLen, &ulFileLen, FILE_LEN_BYTES);
+
+        // Prepare and send announce frame
+        stAnnounce.ucCmd      = CMD_INIT;
+        stAnnounce.ucType     = TYPE_FILE_LENGTH;
+        stAnnounce.ulLength   = FILE_LEN_BYTES;
+        stAnnounce.ulSeqNum   = SEQ_INIT;
+        stAnnounce.pucValue   = ucFileLen;
+        stAnnounce.ucChecksum = DataCalcChecksum(ucFileLen, stAnnounce.ulLength);
+
+        blSendResult = DataSendFrame(&stAnnounce);
+
+        if (blSendResult)
         {
-            if((stResp.ucCmd == CMD_ANNOUNCE) && (stResp.ucType == TYPE_CHUNK_SIZE) && (stResp.ulLength == 4U))
+            // Wait for response from receiver (max chunk size)
+            blRecvResult = DataReceiveFrame(&stResp, ucRespVal, FILE_LEN_BYTES,
+            								DATA_SENDER_TIMEOUT_MS);
+
+            if (blRecvResult)
             {
-                *pulMaxChunk = (uint32)ucRespVal[0]
-                             | ((uint32)ucRespVal[1] << 8)
-                             | ((uint32)ucRespVal[2] << 16)
-                             | ((uint32)ucRespVal[3] << 24);
-                blStatus = true;
+                blValidResp = ((stResp.ucCmd    == CMD_INIT) &&
+                               (stResp.ucType   == TYPE_CHUNK_SIZE) &&
+                               (stResp.ulLength == FILE_LEN_BYTES));
+
+                if (blValidResp)
+                {
+                    // Copy chunk size value from response
+                    memcpy(pulMaxChunk, ucRespVal, FILE_LEN_BYTES);
+                    blStatus = true;
+                }
             }
         }
     }
+
     return blStatus;
 }
 
-//*********************.DataSenderSendChunks.**********************************
-//Purpose :	Split data into chunks and send each chunk with TLV protocol and sequence number
-//Inputs  : pucData - Pointer to data buffer
-//          ulLen   - Length of data
-//          ulMaxChunk - Max chunk size allowed by receiver
-//Outputs : None
-//Return  : TRUE if all chunks sent and acknowledged, FALSE if error
-//Notes   : Handles all error conditions and reports failures
-//*****************************************************************************
-static bool DataSenderSendChunks(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
+//********************* .FileTransfer ******************************************
+// Purpose : Send file data in chunks with TLV protocol and sequence number
+// Inputs  : pucData    - Pointer to data buffer
+//           ulLen      - Length of data
+//           ulMaxChunk - Max chunk size allowed by receiver
+// Outputs : TRUE if all chunks sent, FALSE if error
+// Notes   : No early returns; all variables declared at top
+// *****************************************************************************
+static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
 {
-    uint32 ulOffset = 0U;
-    uint32 ulSeqNum = 1U; // Start sequence number from 1
-    bool blStatus = false; // Initialize to false
+    bool   blStatus     = false;
+    bool   blSendResult = false;
+    uint32 ulSeqNum     = 1; // Start sequence number from 1
+    uint32 ulOffset     = 0;
+    uint8  ucChunkBuf[MAX_FRAME_SIZE] = {0};
+    uint32 ulChunk      = 0U;
 
-    if ((pucData == NULL) || (ulLen == 0) || (ulMaxChunk == 0))
+    // Input parameter validation
+    if ((pucData != NULL) && (ulLen > 0U) && (ulMaxChunk > 0U))
     {
-        // Invalid parameters
-        return false;
-    }
-
-    while (ulOffset < ulLen)
-    {
-        uint32 ulChunk = (ulLen - ulOffset > ulMaxChunk) ? ulMaxChunk : (ulLen - ulOffset);
-        DATA_FRAME stData = {0};
-        stData.ucCmd = CMD_TRANSFER;
-        stData.ucType = TYPE_DATA;
-        stData.ulLength = ulChunk;
-        stData.ulSeqNum = ulSeqNum;
-        stData.pucValue = (uint8*)&pucData[ulOffset];
-        stData.ucChecksum = DataCalcChecksum(stData.pucValue, ulChunk);
-
-        if (!DataSendFrame(&stData))
+        while (ulOffset < ulLen)
         {
-        	printf("Error: DataSendFrame failed at chunk %lu\r\n", ulSeqNum);
-            return false;
+            ulChunk = (ulLen - ulOffset > ulMaxChunk) ? ulMaxChunk : 
+                      (ulLen - ulOffset);
+
+            if (ulChunk > sizeof(ucChunkBuf))
+            {
+                printf("Error: ulChunk size exceeds ucChunkBuf\r\n");
+                blStatus = false;
+                break;
+            }
+
+            memcpy(ucChunkBuf, &pucData[ulOffset], ulChunk);
+
+            DATA_FRAME stData = {0};
+            stData.ucCmd      = CMD_TRANSFER;
+            stData.ucType     = TYPE_DATA;
+            stData.ulLength   = ulChunk;
+            stData.ulSeqNum   = ulSeqNum;
+            stData.pucValue   = ucChunkBuf;
+            stData.ucChecksum = DataCalcChecksum(ucChunkBuf, ulChunk);
+
+            blSendResult = DataSendFrame(&stData);
+
+            if (!blSendResult)
+            {
+                printf("Error: DataSendFrame failed at chunk %lu\r\n", ulSeqNum);
+                blStatus = false;
+                break;
+            }
+
+            ulOffset += ulChunk;
+            ulSeqNum++;
         }
 
-        // Optional: Wait for ACK from receiver and check for errors
-        // DATA_FRAME stAck = {0};
-        // uint8 ucAckVal[1];
-        // if (!DataReceiveFrame(&stAck, ucAckVal, sizeof(ucAckVal), 1000U) || ucAckVal[0] != 0x00)
-        // {
-        //     // Error: did not receive valid ACK
-        //     return false;
-        // }
-
-        ulOffset += ulChunk;
-        ulSeqNum++; // Increment sequence number for each chunk
+        if (ulOffset >= ulLen)
+        {
+            blStatus = true;
+        }
+    }
+    else
+    {
+        blStatus = false;
     }
 
-    blStatus = true; // Only set to true if all chunks sent successfully
     return blStatus;
 }
-
 
 //EOF

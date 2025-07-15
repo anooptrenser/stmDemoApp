@@ -19,9 +19,14 @@
 #include "DataFrame.h"
 #include "common.h"
 
+//***************************** Global Constants *******************************
+#define TIMEOUT 1000
+
 //*********************Forward Declarations************************************
 void UartInit(void);
 bool UartSend(const uint8* pucData, uint32 ulLen);
 bool UartReceive(uint8* pucData, uint32 ulLen, uint32 ulTimeoutMs);
 
 #endif // UARTDRIVER_H
+
+//EOF

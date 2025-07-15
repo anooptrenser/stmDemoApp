@@ -10,7 +10,11 @@
 //Date     : 14-07-2025
 //
 //*****************************************************************************
+#include <stdio.h>
+#include <string.h>
 
 //*********************Local Variables*****************************************
 const uint8 g_pucJson[] = "{\"temp\":23,\"hum\":60,\"status\":\"ok\"}";
 const uint32 g_ulJsonLen = sizeof(g_pucJson) - 1U;
+
+//EOF

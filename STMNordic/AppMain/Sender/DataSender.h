@@ -17,7 +17,14 @@
 //*********************Include Files*******************************************
 #include <stdbool.h>
 
+//********************* Global Constants *****************************************
+#define DATA_SENDER_TIMEOUT_MS    (2000U)
+#define FILE_LEN_BYTES            (4U)
+#define SEQ_INIT                  (0U)
+
 //*********************Forward Declarations************************************
 bool DataSender(void);
 
 #endif // DATASENDER_H
+
+//EOF

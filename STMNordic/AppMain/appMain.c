@@ -27,7 +27,7 @@ void AppMain(void)
 {
     if (!DataSender())
        {
-           printf("Error: DataSend\r\n");
+           printf("Error: DataSend failed\r\n");
            return;
        }
 }
