@@ -18,11 +18,10 @@
 #include <common.h>
 #include <stdbool.h>
 
-//***************************** Global Constants *******************************
+//***************************** Global Constants ******************************
 #define TIMEOUT 1000
 
 //*********************Forward Declarations************************************
-void UartInit(void);
 bool UartSend(const uint8* pucData, uint32 ulLen);
 bool UartReceive(uint8* pucData, uint32 ulLen, uint32 ulTimeoutMs);
 
