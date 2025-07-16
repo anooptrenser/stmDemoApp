@@ -1,9 +1,9 @@
-//******************************* FrameParser *********************************
+//******************************* Parser **************************************
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : FrameParser.c
+// File     : Parser.c
 // Summary  : Serial frame parsing and extraction implementation
 // Author   : Anoop
 // Date     : 15-07-2025
