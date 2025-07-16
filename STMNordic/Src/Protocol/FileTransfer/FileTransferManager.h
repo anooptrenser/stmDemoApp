@@ -18,7 +18,7 @@
 #include "common.h"
 
 //*************************** Global Constants ********************************
-#define DATA_SENDER_TIMEOUT_MS  2000
+#define TIMEOUT_MS              2000
 #define FILE_LEN_BYTES          4
 #define SEQ_INIT                0
 #define MAX_ACK_RETRIES         3

@@ -18,5 +18,4 @@
 extern const uint8 g_ucData[];
 extern const uint32 g_ulDataLen;
 
-
 //EOF

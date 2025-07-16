@@ -90,7 +90,7 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
         if (blSendResult == true)
         {
             blRecvResult = ReceiveDataFrame(&stResp, ucRespVal, FILE_LEN_BYTES,
-            								DATA_SENDER_TIMEOUT_MS);
+            								TIMEOUT_MS);
 
             if (blRecvResult == true)
             {
@@ -183,7 +183,7 @@ static bool WaitForAckWithRetry(const uint16 unSeqNum)
 
     for (int8 cRetry = 0; cRetry < MAX_ACK_RETRIES; ++cRetry)
     {
-        if (WaitForAck(unSeqNum, DATA_SENDER_TIMEOUT_MS))
+        if (WaitForAck(unSeqNum, TIMEOUT_MS))
         {
             blAckReceived = true;
             break;

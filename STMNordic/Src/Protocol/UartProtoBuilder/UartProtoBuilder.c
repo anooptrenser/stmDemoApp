@@ -15,8 +15,7 @@
 #include "UartProtoBuilder.h"
 #include "UartDriver.h"
 
-//*****************************************************************************
-// Function : CalcChecksum
+//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Calculate 8-bit checksum of a provided buffer
 // Inputs   : pucData   - Source data buffer pointer
 //            ulLen     - Number of bytes to sum
@@ -38,8 +37,7 @@ uint8 CalcChecksum(const uint8* pucData, uint32 ulLen)
     return ucSum;
 }
 
-//*****************************************************************************
-// Function : BuildDataFrame
+//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Serializes a data frame into a buffer
 // Inputs   : psFrame     - Frame to serialize
 //            buffer      - Output buffer
@@ -78,8 +76,7 @@ uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBu
     return ultotalLen;
 }
 
-//*****************************************************************************
-// Function : SendDataFrame
+//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Sends a data frame over UART
 // Inputs   : psFrame     - Frame to send
 // Outputs  : None

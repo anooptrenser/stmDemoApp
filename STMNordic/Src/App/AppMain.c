@@ -16,7 +16,7 @@
 #include "FileTransferManager.h"
 #include "Tmp.h"
 
-//*********************.AppMain.**********************************************
+//******************************.FUNCTION_HEADER.******************************
 //Purpose : Entry point for the application
 //Inputs  : None
 //Outputs : None

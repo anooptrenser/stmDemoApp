@@ -18,7 +18,7 @@
 
 extern UART_HandleTypeDef huart2;
 
-//*********************.UartSend.**********************************************
+//******************************.FUNCTION_HEADER.******************************
 //Purpose : Send data over UART
 //Inputs  : pucData - pointer to data buffer
 //          ulLen   - number of bytes to send
@@ -31,7 +31,7 @@ bool UartSend(const uint8* pucData, uint32 ulLen)
     return (HAL_UART_Transmit(&huart2, (uint8*)pucData, ulLen, TIMEOUT) == HAL_OK);
 }
 
-//*********************.UartReceive.*******************************************
+//******************************.FUNCTION_HEADER.******************************
 //Purpose : Receive data from UART
 //Inputs  : pucData - pointer to data buffer
 //          ulLen   - number of bytes to receive
