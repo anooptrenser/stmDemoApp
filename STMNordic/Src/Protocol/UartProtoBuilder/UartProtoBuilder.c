@@ -60,7 +60,7 @@ uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBu
         	ucBuffer[0] = psFrame->ucCmd;
         	ucBuffer[1] = psFrame->ucType;
             memcpy(&ucBuffer[2], &psFrame->ulLength, 4U);
-            memcpy(&ucBuffer[6], &psFrame->ulSeqNum, 4U);
+            memcpy(&ucBuffer[6], &psFrame->unSeqNum, 2U);
 
             if ((psFrame->ulLength > 0U) && (psFrame->pucValue != NULL))
             {

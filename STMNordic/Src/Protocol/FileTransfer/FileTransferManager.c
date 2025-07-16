@@ -20,7 +20,7 @@
 //************************* Local Function Prototypes *************************
 static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk);
 static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk);
-static bool WaitForAck(uint32 ulExpectedSeqNum, uint32 ulTimeoutMs);
+static bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs);
 
 //*****************************************************************************
 // Function : FileTransferManager
@@ -79,7 +79,7 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk)
         stInit.ucCmd = CMD_INIT;
         stInit.ucType = TYPE_FILE_LENGTH;
         stInit.ulLength = FILE_LEN_BYTES;
-        stInit.ulSeqNum = SEQ_INIT;
+        stInit.unSeqNum = SEQ_INIT;
         stInit.pucValue = ucFileLen;
         stInit.ucChecksum = CalcChecksum(ucFileLen, stInit.ulLength);
 
@@ -111,12 +111,12 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk)
 //*****************************************************************************
 // Function : WaitForAck
 // Purpose  : Waits for ACK for a given sequence number from receiver
-// Inputs   : ulExpectedSeqNum - Expected ACK sequence number
+// Inputs   : unExpectedSeqNum - Expected ACK sequence number
 //            ulTimeoutMs      - Timeout for ACK wait
 // Outputs  : None
 // Returns  : bool              - TRUE if correct ACK received, FALSE otherwise
 //*****************************************************************************
-static bool WaitForAck(uint32 ulExpectedSeqNum, uint32 ulTimeoutMs)
+static bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
 {
     DATA_FRAME stAck = {0};
     uint8 ackBuf[1] = {0}; // Length 0 payload for ACK
@@ -128,7 +128,7 @@ static bool WaitForAck(uint32 ulExpectedSeqNum, uint32 ulTimeoutMs)
     {
         if ((stAck.ucCmd == CMD_TRANSFER) &&
             (stAck.ucType == TYPE_ACK) &&
-            (stAck.ulSeqNum == ulExpectedSeqNum) &&
+            (stAck.unSeqNum == unExpectedSeqNum) &&
             (stAck.ulLength == 0U))
         {
             blStatus = true;
@@ -154,7 +154,7 @@ static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
 {
     bool blStatus = false;
     bool blSendResult = false;
-    uint32 ulSeqNum = 1U;
+    uint16 unSeqNum = 1U;
     uint32 ulOffset = 0U;
     uint8 ucChunkBuf[MAX_FRAME_SIZE] = {0};
     uint32 ulChunk = 0U;
@@ -178,7 +178,7 @@ static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
             stData.ucCmd = CMD_TRANSFER;
             stData.ucType = TYPE_DATA;
             stData.ulLength = ulChunk;
-            stData.ulSeqNum = ulSeqNum;
+            stData.unSeqNum = unSeqNum;
             stData.pucValue = ucChunkBuf;
             stData.ucChecksum = CalcChecksum(ucChunkBuf, ulChunk);
 
@@ -186,21 +186,26 @@ static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
 
             if (blSendResult != true)
             {
-                printf("Error: SendFrame failed at chunk %lu\r\n", (unsigned long)ulSeqNum);
+                printf("Error: SendFrame failed at chunk %lu\r\n", (unsigned long)unSeqNum);
                 blStatus = false;
                 break;
             }
 
             // Wait for ACK from receiver for this chunk
-            if (WaitForAck(ulSeqNum, DATA_SENDER_TIMEOUT_MS) != true)
+            if (WaitForAck(unSeqNum, DATA_SENDER_TIMEOUT_MS) != true)
             {
-                printf("Error: No valid ACK for chunk %lu\r\n", (unsigned long)ulSeqNum);
+                printf("Error: No valid ACK for chunk %lu\r\n", (unsigned long)unSeqNum);
                 blStatus = false;
                 break;
             }
 
             ulOffset += ulChunk;
-            ulSeqNum++;
+            unSeqNum++;
+
+            if (unSeqNum == 0)
+            {
+                unSeqNum = 1;
+            }
         }
 
         if (ulOffset >= ulLen)

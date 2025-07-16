@@ -21,6 +21,7 @@ static bool ReceiveHeader(uint8* ucHeader, uint32 ulTimeoutMs);
 static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 totalToReceive,
 									 uint32 ulTimeoutMs);
 static bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer);
+
 //*****************************************************************************
 // Function : ParseHeader
 // Purpose  : Populates a DATA_FRAME struct from header buffer
@@ -36,7 +37,7 @@ void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame)
         psFrame->ucCmd = ucHeader[0];
         psFrame->ucType = ucHeader[1];
         memcpy(&psFrame->ulLength, &ucHeader[2], 4U);
-        memcpy(&psFrame->ulSeqNum, &ucHeader[6], 4U);
+        memcpy(&psFrame->unSeqNum, &ucHeader[6], 2U);
     }
 }
 

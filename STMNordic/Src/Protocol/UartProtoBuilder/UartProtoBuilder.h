@@ -18,7 +18,7 @@
 
 //*************************** Global Constants ********************************
 #define MAX_FRAME_SIZE      1024U
-#define FRAME_HEADER_SIZE   10U
+#define FRAME_HEADER_SIZE   8U
 
 typedef enum {
     CMD_INIT      = 0x01,
@@ -34,13 +34,14 @@ typedef enum {
 
 //************************** Data Structures **********************************
 typedef struct {
-    uint8  ucCmd;
-    uint8  ucType;
+    uint8 ucCmd;
+    uint8 ucType;
     uint32 ulLength;
-    uint32 ulSeqNum;
+    uint16 unSeqNum;         // Updated from ulSeqNum
     uint8 *pucValue;
-    uint8  ucChecksum;
+    uint8 ucChecksum;
 } DATA_FRAME;
+
 
 //************************** Function Declarations ****************************
 uint8 CalcChecksum(const uint8* pucData, uint32 ulLen);
