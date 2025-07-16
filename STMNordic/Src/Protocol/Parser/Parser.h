@@ -18,7 +18,8 @@
 
 //************************** Function Declarations ****************************
 void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame);
-bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen, uint32 ulTimeoutMs);
+bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen,
+					  uint32 ulTimeoutMs);
 
 #endif // FRAME_PARSER_H
 

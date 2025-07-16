@@ -88,7 +88,7 @@ uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBu
 bool SendDataFrame(const DATA_FRAME* psFrame)
 {
     bool blStatus = false;
-    uint8 ucBuffer[MAX_FRAME_SIZE];
+    uint8 ucBuffer[MAX_FRAME_SIZE] = {0};
     uint32 ulFrameLen = 0U;
 
     if (psFrame != NULL)
