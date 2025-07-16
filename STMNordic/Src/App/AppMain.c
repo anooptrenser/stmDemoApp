@@ -10,11 +10,11 @@
 //Date     : 14-07-2025
 //
 //*****************************************************************************
-
 //*********************Include Files*******************************************
+#include <stdio.h>
 #include "AppMain.h"
 #include "FileTransferManager.h"
-#include <stdio.h>
+#include "Tmp.h"
 
 //*********************.AppMain.**********************************************
 //Purpose : Entry point for the application
@@ -25,11 +25,11 @@
 //*****************************************************************************
 void AppMain(void)
 {
-    if (!FileTransferManager())
-       {
-           printf("Error: DataSend failed\r\n");
-           return;
-       }
+    if (!FileTransferManager(g_ucData, g_ulDataLen))
+    {
+        printf("Error: DataSend failed\r\n");
+        return;
+    }
 }
 
 //EOF

@@ -10,13 +10,13 @@
 //
 //*****************************************************************************
 //*********************Include Files*******************************************
-#include "FrameBuilder.h"
-#include "UartDriver.h"
 #include <string.h>
 #include <stdbool.h>
+#include "FrameBuilder.h"
+#include "UartDriver.h"
 
 //*****************************************************************************
-// Function : DataCalcChecksum
+// Function : CalcChecksum
 // Purpose  : Calculate 8-bit checksum of a provided buffer
 // Inputs   : pucData   - Source data buffer pointer
 //            ulLen     - Number of bytes to sum
@@ -79,13 +79,13 @@ uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBu
 }
 
 //*****************************************************************************
-// Function : DataSendFrame
+// Function : SendDataFrame
 // Purpose  : Sends a data frame over UART
 // Inputs   : psFrame     - Frame to send
 // Outputs  : None
 // Returns  : bool        - TRUE for success, FALSE for error
 //*****************************************************************************
-bool DataSendFrame(const DATA_FRAME* psFrame)
+bool SendDataFrame(const DATA_FRAME* psFrame)
 {
     bool blStatus = false;
     uint8 ucBuffer[MAX_FRAME_SIZE];

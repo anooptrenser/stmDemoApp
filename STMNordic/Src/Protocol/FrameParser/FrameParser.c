@@ -10,14 +10,16 @@
 //
 //*****************************************************************************
 //*********************Include Files*******************************************
+#include <string.h>
+#include <stdbool.h>
 #include "FrameParser.h"
 #include "UartDriver.h"
-#include <string.h>
-#include "stdbool.h"
+#include "common.h"
 
 //************************** Forward Declarations *****************************
 static bool ReceiveHeader(uint8* ucHeader, uint32 ulTimeoutMs);
-static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 totalToReceive, uint32 ulTimeoutMs);
+static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 totalToReceive,
+									 uint32 ulTimeoutMs);
 static bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer);
 //*****************************************************************************
 // Function : ParseHeader
@@ -39,7 +41,7 @@ void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame)
 }
 
 //*****************************************************************************
-// Function : DataReceiveFrame
+// Function : ReceiveDataFrame
 // Purpose  : Receives and parses a TLV frame from UART
 // Inputs   : psFrame       - Frame structure to fill
 //            pucBuffer     - Content/value storage buffer
@@ -48,11 +50,12 @@ void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame)
 // Outputs  : None
 // Returns  : bool          - TRUE for valid/correct frame, FALSE otherwise
 //*****************************************************************************
-bool DataReceiveFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen, uint32 ulTimeoutMs)
+bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen,
+					  uint32 ulTimeoutMs)
 {
     bool blStatus = false;
     uint8 ucHeader[FRAME_HEADER_SIZE];
-    uint32 ulTotalToReceive = 0U;
+    uint32 ulReceive = 0U;
 
     if ((psFrame != NULL) && (pucBuffer != NULL))
     {
@@ -62,9 +65,9 @@ bool DataReceiveFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen, ui
 
             if (psFrame->ulLength <= ulMaxLen)
             {
-            	ulTotalToReceive = psFrame->ulLength + 1U;
+            	ulReceive = psFrame->ulLength + 1U;
 
-                if (ReceiveValueWithChecksum(pucBuffer, ulTotalToReceive, ulTimeoutMs))
+                if (ReceiveValueWithChecksum(pucBuffer, ulReceive, ulTimeoutMs))
                 {
                     if (ValidateAndExtractValue(psFrame, pucBuffer))
                     {

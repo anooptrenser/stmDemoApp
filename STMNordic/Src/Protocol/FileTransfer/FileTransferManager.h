@@ -13,8 +13,9 @@
 #ifndef FILE_TRANSFER_MANAGER_H
 #define FILE_TRANSFER_MANAGER_H
 
-#include "common.h"
+//*********************Include Files*******************************************
 #include <stdbool.h>
+#include "common.h"
 
 //*************************** Global Constants ********************************
 #define DATA_SENDER_TIMEOUT_MS  (2000U)
@@ -22,7 +23,7 @@
 #define SEQ_INIT                (0U)
 
 //************************** Function Declarations ****************************
-bool FileTransferManager(void);
+bool FileTransferManager(const uint8* pucData, uint32 ulLen);
 
 #endif // FILE_TRANSFER_MANAGER_H
 

@@ -1,24 +1,22 @@
-//*******************************AppMain***************************************
+//*******************************tmp***************************************
 //Copyright (c) 2025 Trenser Technology Solutions
 //All Rights Reserved
 //*****************************************************************************
 //
-//File     : AppMain.h
-//Summary  : Application entry point header
+//File     : Tmp.c
+//Summary  : Sample data
 //Note     : None
 //Author   : Anoop G
 //Date     : 14-07-2025
 //
 //*****************************************************************************
-#ifndef APPMAIN_H
-#define APPMAIN_H
-
 //*********************Include Files*******************************************
+#include <stdio.h>
+#include <string.h>
 #include "common.h"
 
-//*********************Forward Declarations************************************
-void AppMain(void);
-
-#endif // APPMAIN_H
+//*********************Local Variables*****************************************
+const uint8 g_ucData[] = "{\"temp\":23,\"hum\":60,\"status\":\"ok\"}";
+const uint32 g_ulDataLen = sizeof(g_ucData) - 1U;
 
 //EOF

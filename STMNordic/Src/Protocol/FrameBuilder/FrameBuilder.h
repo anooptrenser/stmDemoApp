@@ -29,7 +29,7 @@ typedef enum {
     TYPE_FILE_LENGTH = 0x01,
     TYPE_CHUNK_SIZE  = 0x02,
     TYPE_DATA        = 0x03,
-    TYPE_ACK         = 0x00
+    TYPE_ACK         = 0x04
 } TYPE_TYPE;
 
 //************************** Data Structures **********************************
@@ -45,7 +45,7 @@ typedef struct {
 //************************** Function Declarations ****************************
 uint8 CalcChecksum(const uint8* pucData, uint32 ulLen);
 uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucbuffer, uint32 maxBufSize);
-bool DataSendFrame(const DATA_FRAME* psFrame);
+bool SendDataFrame(const DATA_FRAME* psFrame);
 
 #endif // FRAME_BUILDER_H
 

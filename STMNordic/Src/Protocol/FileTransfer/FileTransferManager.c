@@ -10,13 +10,12 @@
 //
 //*****************************************************************************
 //*********************Include Files*******************************************
+#include <string.h>
+#include <stdio.h>
 #include "FileTransferManager.h"
 #include "FrameBuilder.h"
 #include "FrameParser.h"
 #include "UartDriver.h"
-#include "tmp.h"
-#include <string.h>
-#include <stdio.h>
 
 //************************* Local Function Prototypes *************************
 static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk);
@@ -26,16 +25,17 @@ static bool WaitForAck(uint32 ulExpectedSeqNum, uint32 ulTimeoutMs);
 //*****************************************************************************
 // Function : FileTransferManager
 // Purpose  : Application entry for the protocol file transfer task.
-// Inputs   : None
+// Inputs   : pucData - Pointer to the data buffer
+//			: ulFileLen - Length of the data buffer
 // Outputs  : None
 // Returns  : bool   - TRUE if transfer complete, FALSE if failed.
 //*****************************************************************************
-bool FileTransferManager(void)
+bool FileTransferManager(const uint8* pucData, uint32 ulFileLen)
 {
     uint32 ulMaxChunk = 0U;
     bool blStatus = false;
 
-    blStatus = InitFileTransfer(g_ulDataLen, &ulMaxChunk);
+    blStatus = InitFileTransfer(ulFileLen, &ulMaxChunk);
 
     if (blStatus != true)
     {
@@ -43,7 +43,7 @@ bool FileTransferManager(void)
     }
     else
     {
-        blStatus = FileTransfer(g_ucData, g_ulDataLen, ulMaxChunk);
+        blStatus = FileTransfer(pucData, ulFileLen, ulMaxChunk);
         if (blStatus != true)
         {
             printf("Error: FileTransfer failed\r\n");
@@ -83,10 +83,11 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk)
         stInit.pucValue = ucFileLen;
         stInit.ucChecksum = CalcChecksum(ucFileLen, stInit.ulLength);
 
-        blSendResult = DataSendFrame(&stInit);
+        blSendResult = SendDataFrame(&stInit);
+
         if (blSendResult == true)
         {
-            blRecvResult = DataReceiveFrame(&stResp, ucRespVal, FILE_LEN_BYTES,
+            blRecvResult = ReceiveDataFrame(&stResp, ucRespVal, FILE_LEN_BYTES,
             								DATA_SENDER_TIMEOUT_MS);
 
             if (blRecvResult == true)
@@ -121,7 +122,7 @@ static bool WaitForAck(uint32 ulExpectedSeqNum, uint32 ulTimeoutMs)
     uint8 ackBuf[1] = {0}; // Length 0 payload for ACK
     bool blStatus = false;
 
-    blStatus = DataReceiveFrame(&stAck, ackBuf, sizeof(ackBuf), ulTimeoutMs);
+    blStatus = ReceiveDataFrame(&stAck, ackBuf, sizeof(ackBuf), ulTimeoutMs);
 
     if (blStatus == true)
     {
@@ -181,14 +182,14 @@ static bool FileTransfer(const uint8* pucData, uint32 ulLen, uint32 ulMaxChunk)
             stData.pucValue = ucChunkBuf;
             stData.ucChecksum = CalcChecksum(ucChunkBuf, ulChunk);
 
-                blSendResult = DataSendFrame(&stData);
+            blSendResult = SendDataFrame(&stData);
 
-                if (blSendResult != true)
-                {
-                    printf("Error: DataSendFrame failed at chunk %lu\r\n", (unsigned long)ulSeqNum);
-                    blStatus = false;
-                    break;
-                }
+            if (blSendResult != true)
+            {
+                printf("Error: SendFrame failed at chunk %lu\r\n", (unsigned long)ulSeqNum);
+                blStatus = false;
+                break;
+            }
 
             // Wait for ACK from receiver for this chunk
             if (WaitForAck(ulSeqNum, DATA_SENDER_TIMEOUT_MS) != true)
