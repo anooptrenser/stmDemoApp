@@ -3,7 +3,7 @@
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : FrameBuilder.c
+// File     : UartProtoBuilder.c
 // Summary  : Serial frame building and serialization implementation
 // Author   : Anoop
 // Date     : 15-07-2025
@@ -12,7 +12,7 @@
 //*********************Include Files*******************************************
 #include <string.h>
 #include <stdbool.h>
-#include "FrameBuilder.h"
+#include "UartProtoBuilder.h"
 #include "UartDriver.h"
 
 //*****************************************************************************

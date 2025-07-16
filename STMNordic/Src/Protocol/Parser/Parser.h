@@ -3,18 +3,18 @@
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : FrameParser.h
+// File     : Parser.h
 // Summary  : Serial frame parsing and extraction header
 // Author   : Anoop
 // Date     : 15-07-2025
 //
 //*****************************************************************************
-#ifndef FRAME_PARSER_H
-#define FRAME_PARSER_H
+#ifndef PARSER_H
+#define PARSER_H
 
 //*********************Include Files*******************************************
 #include <stdbool.h>
-#include "FrameBuilder.h"
+#include "UartProtoBuilder.h"
 
 //************************** Function Declarations ****************************
 void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame);

@@ -13,8 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "FileTransferManager.h"
-#include "FrameBuilder.h"
-#include "FrameParser.h"
+#include "UartProtoBuilder.h"
+#include "Parser.h"
 #include "UartDriver.h"
 
 //************************* Local Function Prototypes *************************

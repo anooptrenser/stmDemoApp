@@ -3,14 +3,14 @@
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : FrameBuilder.h
+// File     : UartProtoBuilder.h
 // Summary  : Serial frame building and serialization header
 // Author   : Anoop
 // Date     : 15-07-2025
 //
 //*****************************************************************************
-#ifndef FRAME_BUILDER_H
-#define FRAME_BUILDER_H
+#ifndef UART_PROTO_BUILDER_H
+#define UART_PROTO_BUILDER_H
 
 //*********************Include Files*******************************************
 #include "common.h"
@@ -47,6 +47,6 @@ uint8 CalcChecksum(const uint8* pucData, uint32 ulLen);
 uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucbuffer, uint32 maxBufSize);
 bool SendDataFrame(const DATA_FRAME* psFrame);
 
-#endif // FRAME_BUILDER_H
+#endif
 
 // EOF
