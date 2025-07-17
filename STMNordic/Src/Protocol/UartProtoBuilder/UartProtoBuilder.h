@@ -17,7 +17,7 @@
 #include <stdbool.h>
 
 //*************************** Global Constants ********************************
-#define MAX_FRAME_SIZE      1024U
+#define MAX_FRAME_SIZE      256U
 #define FRAME_HEADER_SIZE   8U
 
 typedef enum {
