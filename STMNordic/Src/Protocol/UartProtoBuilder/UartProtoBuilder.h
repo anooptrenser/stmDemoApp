@@ -37,7 +37,7 @@ typedef struct {
     uint8 ucCmd;
     uint8 ucType;
     uint32 ulLength;
-    uint16 unSeqNum;         
+    uint16 unSeqNum;         // Updated from ulSeqNum
     uint8 *pucValue;
     uint8 ucChecksum;
 } DATA_FRAME;

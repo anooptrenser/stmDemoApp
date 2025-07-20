@@ -16,11 +16,20 @@
 #include "UartDriver.h"
 #include "common.h"
 
-//************************** Forward Declarations *****************************
-static bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs);
-static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 ulToReceive,
-									 uint32 ulTimeoutMs);
-static bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer);
+//*****************************************************************************
+// Function : ValidateChecksum
+// Purpose  : Validates the checksum of a buffer using CalcChecksum
+// Inputs   : pucValue           - Data buffer pointer
+//            ulLength           - Number of bytes in buffer
+//            ucReceivedChecksum - Received checksum to validate against
+// Outputs  : None
+// Returns  : bool               - TRUE if checksum matches, FALSE otherwise
+//*****************************************************************************
+bool ValidateChecksum(const uint8* pucValue, uint32 ulLength, uint8 ucReceivedChecksum)
+{
+    uint8 calc = CalcChecksum(pucValue, ulLength);
+    return (calc == ucReceivedChecksum);
+}
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Decodes the raw 8-byte UART header into a structured DATA_FRAME.
@@ -41,48 +50,6 @@ void ParseHeader(const uint8* pucHeader, DATA_FRAME* psFrame)
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose  : Receives a complete UART frame (header + payload + checksum)
-//            and fills a DATA_FRAME struct with parsed values.
-// Inputs   : psFrame      - Pointer to DATA_FRAME structure to fill.
-//            pucBuffer    - Buffer to hold payload + checksum data.
-//            ulMaxLen     - Maximum allowed length of payload.
-//            ulTimeoutMs  - Timeout for UART reception (in milliseconds).
-// Outputs  : None
-// Returns  : bool         - TRUE if a valid frame is received and verified.
-//                         - FALSE if timeout/error/invalid checksum occurs.
-//*****************************************************************************
-bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen,
-					  uint32 ulTimeoutMs)
-{
-    bool blStatus = false;
-    uint8 ucHeader[FRAME_HEADER_SIZE];
-    uint32 ulReceive = 0U;
-
-    if ((psFrame != NULL) && (pucBuffer != NULL))
-    {
-        if (ReceiveHeader(ucHeader, ulTimeoutMs))
-        {
-            ParseHeader(ucHeader, psFrame);
-
-            if (psFrame->ulLength <= ulMaxLen)
-            {
-            	ulReceive = psFrame->ulLength + 1U;
-
-                if (ReceiveValueWithChecksum(pucBuffer, ulReceive, ulTimeoutMs))
-                {
-                    if (ValidateAndExtractValue(psFrame, pucBuffer))
-                    {
-                        blStatus = true;
-                    }
-                }
-            }
-        }
-    }
-
-    return blStatus;
-}
-
-//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Receives the fixed-length 8-byte UART header.
 // Inputs   : pucHeader   - Pointer to the buffer where header will be stored.
 //            ulTimeoutMs - Timeout for UART receive in milliseconds.
@@ -90,7 +57,7 @@ bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen,
 // Returns  : bool        - TRUE if header received successfully.
 //                        - FALSE if timeout or invalid pointer.
 //*****************************************************************************
-static bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs)
+bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs)
 {
     bool blResult = false;
 
@@ -102,7 +69,6 @@ static bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs)
     return blResult;
 }
 
-
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Receives value + checksum bytes from UART
 // Inputs   : pucBuffer   - Buffer to fill with value + checksum
@@ -111,7 +77,7 @@ static bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs)
 // Outputs  : None
 // Returns  : bool        - TRUE if success, FALSE otherwise
 //*****************************************************************************
-static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 ulToReceive, uint32 ulTimeoutMs)
+bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 ulToReceive, uint32 ulTimeoutMs)
 {
     bool blResult = false;
 
@@ -130,10 +96,9 @@ static bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 ulToReceive, uint3
 // Outputs  : None
 // Returns  : bool        - TRUE if checksum matches, FALSE otherwise
 //*****************************************************************************
-static bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer)
+bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer)
 {
     bool blValid = false;
-    uint8 ucCalcCsum = 0U;
 
     if ((psFrame != NULL) && (pucBuffer != NULL))
     {
@@ -148,19 +113,8 @@ static bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer)
 
         psFrame->ucChecksum = pucBuffer[psFrame->ulLength];
 
-        if ((psFrame->ulLength > 0U) && (psFrame->pucValue != NULL))
-        {
-            ucCalcCsum = CalcChecksum(psFrame->pucValue, psFrame->ulLength);
-        }
-        else
-        {
-            ucCalcCsum = 0U;
-        }
-
-        if (psFrame->ucChecksum == ucCalcCsum)
-        {
-            blValid = true;
-        }
+        // Use ValidateChecksum for validation
+        blValid = ValidateChecksum(psFrame->pucValue, psFrame->ulLength, psFrame->ucChecksum);
     }
 
     return blValid;

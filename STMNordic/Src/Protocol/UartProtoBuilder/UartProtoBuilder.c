@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include "UartProtoBuilder.h"
 #include "UartDriver.h"
+#include "AppMain.h"
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Calculate 8-bit checksum of a provided buffer
@@ -34,6 +35,7 @@ uint8 CalcChecksum(const uint8* pucData, uint32 ulLen)
             ucSum += pucData[ulIdx];
         }
     }
+
     return ucSum;
 }
 
@@ -93,8 +95,8 @@ bool SendDataFrame(const DATA_FRAME* psFrame)
     	ulFrameLen = BuildDataFrame(psFrame, ucBuffer, sizeof(ucBuffer));
 
         if (ulFrameLen != 0U)
-        {
-            if (UartSend(ucBuffer, ulFrameLen))
+        {      	
+        	if (UartSend(ucBuffer, ulFrameLen))
             {
                 blStatus = true;
             }
