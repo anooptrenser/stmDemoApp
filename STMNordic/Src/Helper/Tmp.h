@@ -18,4 +18,7 @@
 extern const uint8 g_ucData[];
 extern const uint32 g_ulDataLen;
 
+//************************** Function Declarations ****************************
+void HexDump(const void *pvData, uint32 ulSize);
+
 //EOF

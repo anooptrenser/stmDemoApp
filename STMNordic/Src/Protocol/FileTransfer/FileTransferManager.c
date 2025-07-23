@@ -12,6 +12,7 @@
 //*********************Include Files*******************************************
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "FileTransferManager.h"
 #include "UartProtoBuilder.h"
 #include "Parser.h"
@@ -34,7 +35,6 @@ bool FileTransferManager(const uint8* pucData, uint32 ulFileLen)
     uint32 ulMaxChunk = 0U;
     bool blStatus = false;
 
-    printf("File length: %x\n",ulFileLen);
     blStatus = InitFileTransfer(ulFileLen, &ulMaxChunk);
 
     if (blStatus != true)
@@ -65,7 +65,7 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
     DATA_FRAME stInit = {0};
     DATA_FRAME stResp = {0};
     uint8 ucFileLen[FILE_LEN_BYTES] = {0};
-    uint8 ucRespVal[FILE_LEN_BYTES] = {0};
+    //uint8 ucRespVal[FILE_LEN_BYTES] = {0};
     bool blStatus = false;
     bool blSendResult = false;
     bool blRecvResult = false;
@@ -84,27 +84,30 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
 
         blSendResult = SendDataFrame(&stInit);
 
-        if (blSendResult == true)
+        blRecvResult = WaitForFrameFromQueue(&stResp, DATA_SENDER_TIMEOUT_MS);
+
+        if (blRecvResult == true)
         {
-            blRecvResult = ReceiveDataFrame(&stResp, ucRespVal, FILE_LEN_BYTES,
-                                            DATA_SENDER_TIMEOUT_MS);
-
-            if (blRecvResult == true)
+            blValidResp = ((stResp.ucCmd == CMD_INIT) &&
+                           (stResp.ucType == TYPE_CHUNK_SIZE) &&
+                           (stResp.ulLength == FILE_LEN_BYTES)) ? true : false;
+        
+            if (blValidResp == true)
             {
-                blValidResp = ((stResp.ucCmd == CMD_INIT) &&
-                               (stResp.ucType == TYPE_CHUNK_SIZE) &&
-                               (stResp.ulLength == FILE_LEN_BYTES)) ? true : false;
-
-                if (blValidResp == true)
-                {
-                    memcpy(pulMaxChunk, ucRespVal, FILE_LEN_BYTES);
-                    blStatus = true;
-                }
+                memcpy(pulMaxChunk, stResp.pucValue, FILE_LEN_BYTES);
+                blStatus = true;
+            }
+            // Free buffer here regardless
+            if (stResp.pucValue != NULL)
+            {
+                free(stResp.pucValue);
+                stResp.pucValue = NULL;
             }
         }
+
     }
 
-    return blStatus;
+    return blSendResult;
 }
 
 

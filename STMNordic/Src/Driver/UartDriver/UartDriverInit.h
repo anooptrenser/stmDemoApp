@@ -1,24 +1,22 @@
-//*******************************AppMain***************************************
+//*******************************UartDriver************************************
 //Copyright (c) 2025 Trenser Technology Solutions
 //All Rights Reserved
 //*****************************************************************************
 //
-//File     : AppMain.h
-//Summary  : Application entry point header
+//File     : UartDriverInit.h
+//Summary  : UART driver subsystem initialization
 //Note     : None
 //Author   : Anoop G
 //Date     : 14-07-2025
 //
 //*****************************************************************************
-#ifndef APPMAIN_H
-#define APPMAIN_H
+#ifndef UART_DRIVER_INIT_H
+#define UART_DRIVER_INIT_H
 
-//*********************Include Files*******************************************
-#include "common.h"
+//******************************* Include Files *******************************
+#include <stdbool.h>
 
 //*********************Forward Declarations************************************
-void AppMain(void);
-void FileTransferManagerTask(void *argument);
-#endif // APPMAIN_H
+bool UartSubsystemInit(void);
 
-//EOF
+#endif // UART_DRIVER_INIT_H

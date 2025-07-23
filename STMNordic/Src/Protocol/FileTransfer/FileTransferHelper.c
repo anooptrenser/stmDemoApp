@@ -17,6 +17,7 @@
 #include "UartDriver.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Waits for ACK for a given sequence number from receiver
@@ -28,10 +29,10 @@
 bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
 {
     DATA_FRAME stAck = {0};
-    uint8 ackBuf[1] = {0}; // Length 0 payload for ACK
+   // uint8 ackBuf[1] = {0};
     bool blStatus = false;
 
-    blStatus = ReceiveDataFrame(&stAck, ackBuf, sizeof(ackBuf), ulTimeoutMs);
+    blStatus = WaitForFrameFromQueue(&stAck, ulTimeoutMs);
 
     if (blStatus == true)
     {
@@ -46,8 +47,16 @@ bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
         {
             blStatus = false;
         }
+
+        if (stAck.pucValue != NULL)
+        {
+            free(stAck.pucValue);
+            stAck.pucValue = NULL;
+        }
     }
-    return blStatus;
+
+return blStatus;
+
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -80,6 +89,19 @@ bool SendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLengt
 }
 
 //******************************.FUNCTION_HEADER.******************************
+// Purpose  : Waits for a frame from the protocol queue with timeout
+// Inputs   : psFrame      - Pointer to DATA_FRAME structure to fill
+//          : ulTimeoutMs  - Timeout in milliseconds to wait for frame
+// Outputs  : None
+// Return   : bool         - TRUE if frame received, FALSE if timeout or error
+// Notes    : Uses OSQueueRecv to receive from gFrameQueueHandle
+//*****************************************************************************
+bool WaitForFrameFromQueue(DATA_FRAME* psFrame, uint32 ulTimeoutMs)
+{
+    return OSQueueRecv(gFrameQueueHandle, psFrame, ulTimeoutMs);
+}
+
+//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Waits for ACK with retry mechanism for a given sequence number
 // Inputs   : unSeqNum - Sequence number to wait for ACK
 // Outputs  : None
@@ -109,44 +131,4 @@ bool WaitForAckWithRetry(const uint16 unSeqNum)
     return blAckReceived;
 }
 
-//******************************.FUNCTION_HEADER.******************************
-// Purpose  : Receives a complete UART frame (header + payload + checksum)
-//            and fills a DATA_FRAME struct with parsed values.
-// Inputs   : psFrame      - Pointer to DATA_FRAME structure to fill.
-//          : pucBuffer    - Buffer to hold payload + checksum data.
-//          : ulMaxLen     - Maximum allowed length of payload.
-//          : ulTimeoutMs  - Timeout for UART reception (in milliseconds).
-// Outputs  : None
-// Returns  : bool         - TRUE if a valid frame is received and verified.
-//                         - FALSE if timeout/error/invalid checksum occurs.
-//*****************************************************************************
-bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen,
-              uint32 ulTimeoutMs)
-{
-    bool blStatus = false;
-    uint8 ucHeader[FRAME_HEADER_SIZE];
-    uint32 ulReceive = 0U;
-
-    if ((psFrame != NULL) && (pucBuffer != NULL))
-    {
-        if (ReceiveHeader(ucHeader, ulTimeoutMs))
-        {
-            ParseHeader(ucHeader, psFrame);
-
-            if (psFrame->ulLength <= ulMaxLen)
-            {
-                ulReceive = psFrame->ulLength + 1U;
-
-                if (ReceiveValueWithChecksum(pucBuffer, ulReceive, ulTimeoutMs))
-                {
-                    if (ValidateAndExtractValue(psFrame, pucBuffer))
-                    {
-                        blStatus = true;
-                    }
-                }
-            }
-        }
-    }
-
-    return blStatus;
-}
+//EOF

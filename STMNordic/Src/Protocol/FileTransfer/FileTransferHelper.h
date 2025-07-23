@@ -22,6 +22,6 @@
 bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs);
 bool SendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLength);
 bool WaitForAckWithRetry(const uint16 unSeqNum);
-bool ReceiveDataFrame(DATA_FRAME* psFrame, uint8* pucBuffer, uint32 ulMaxLen, uint32 ulTimeoutMs);
+bool WaitForFrameFromQueue(DATA_FRAME* psFrame, uint32 ulTimeoutMs);
 
 #endif // FILE_TRANSFER_HELPER_H

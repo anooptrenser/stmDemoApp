@@ -50,46 +50,6 @@ void ParseHeader(const uint8* pucHeader, DATA_FRAME* psFrame)
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose  : Receives the fixed-length 8-byte UART header.
-// Inputs   : pucHeader   - Pointer to the buffer where header will be stored.
-//            ulTimeoutMs - Timeout for UART receive in milliseconds.
-// Outputs  : None
-// Returns  : bool        - TRUE if header received successfully.
-//                        - FALSE if timeout or invalid pointer.
-//*****************************************************************************
-bool ReceiveHeader(uint8* pucHeader, uint32 ulTimeoutMs)
-{
-    bool blResult = false;
-
-    if (pucHeader != NULL)
-    {
-        blResult = UartReceive(pucHeader, FRAME_HEADER_SIZE, ulTimeoutMs);
-    }
-
-    return blResult;
-}
-
-//******************************.FUNCTION_HEADER.******************************
-// Purpose  : Receives value + checksum bytes from UART
-// Inputs   : pucBuffer   - Buffer to fill with value + checksum
-//            totalToReceive - Bytes to receive
-//            ulTimeoutMs - Timeout in ms
-// Outputs  : None
-// Returns  : bool        - TRUE if success, FALSE otherwise
-//*****************************************************************************
-bool ReceiveValueWithChecksum(uint8* pucBuffer, uint32 ulToReceive, uint32 ulTimeoutMs)
-{
-    bool blResult = false;
-
-    if (pucBuffer != NULL)
-    {
-        blResult = UartReceive(pucBuffer, ulToReceive, ulTimeoutMs);
-    }
-
-    return blResult;
-}
-
-//******************************.FUNCTION_HEADER.******************************
 // Purpose  : Fills value pointer, extracts checksum, and validates integrity
 // Inputs   : psFrame     - Frame to fill
 //            pucBuffer   - Buffer containing value and checksum

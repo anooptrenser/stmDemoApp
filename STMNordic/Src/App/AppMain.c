@@ -15,21 +15,40 @@
 #include "AppMain.h"
 #include "FileTransferManager.h"
 #include "Tmp.h"
+#include "UartDriver.h"
+#include "UartFrameReceiverTasks.h"
+#include "CircularBuffer.h"
+#include <ctype.h>
+#include <stdint.h>
+#include "cmsis_os2.h"
+#include "main.h"
+#include "OsFactory.h"
+#include "UartDriverInit.h"
+
+//***************************** Global Variables ******************************
 
 //******************************.FUNCTION_HEADER.******************************
-//Purpose : Entry point for the application
-//Inputs  : None
-//Outputs : None
-//Return  : None
-//Notes   : None
+// Purpose : Application entry point for initializing peripherals and tasks
+// Inputs  : None
+// Outputs : None
+// Return  : None
+// Notes   : Initializes UART peripheral, queue system and starts FreeRTOS tasks.
 //*****************************************************************************
 void AppMain(void)
 {
-    if (!FileTransferManager(g_ucData, g_ulDataLen))
+    // Initialize the UART subsystem (buffer, queue, interrupt)    
+    if (!UartSubsystemInit())
     {
-        printf("Error: DataSend failed\r\n");
-        return;
+        printf("[ERROR] UART subsystem failed to initialize\n");
     }
+
+    // Create all tasks using the function table
+    if (!TaskInit())
+    {
+        printf("Task initialization failed!\r\n");
+    }
+
+    OsTaskDelay(1000);
 }
 
 //EOF

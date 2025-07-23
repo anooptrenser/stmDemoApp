@@ -17,8 +17,12 @@
 #include <stdbool.h>
 
 //*************************** Global Constants ********************************
-#define MAX_FRAME_SIZE      256U
-#define FRAME_HEADER_SIZE   8U
+#define MAX_FRAME_SIZE  256
+#define UART_START_BYTE 0xFF
+#define UART_STOP_BYTE  0x0E
+#define FRAME_HEADER_SIZE     8 // Cmd (1), Type (1), Length (4), SeqNum (2)
+#define FRAME_BYTES_OVERHEAD  3 // Start, Checksum, Stop
+#define MAX_RAW_FRAME_LEN   (MAX_FRAME_SIZE + FRAME_HEADER_SIZE + 3)
 
 typedef enum {
     CMD_INIT      = 0x01,
@@ -33,15 +37,17 @@ typedef enum {
 } TYPE_TYPE;
 
 //************************** Data Structures **********************************
-typedef struct {
+typedef struct
+{
+    uint8 ucStartByte;     
     uint8 ucCmd;
     uint8 ucType;
     uint32 ulLength;
-    uint16 unSeqNum;         // Updated from ulSeqNum
-    uint8 *pucValue;
+    uint16 unSeqNum;
+    uint8 *pucValue;      
     uint8 ucChecksum;
+    uint8 ucStopByte;      
 } DATA_FRAME;
-
 
 //************************** Function Declarations ****************************
 uint8 CalcChecksum(const uint8* pucData, uint32 ulLen);

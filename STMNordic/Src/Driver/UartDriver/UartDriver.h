@@ -14,16 +14,25 @@
 #ifndef UARTDRIVER_H
 #define UARTDRIVER_H
 
-//*********************Include Files*******************************************
+//*************************** Include Files************************************
 #include <common.h>
 #include <stdbool.h>
+#include "main.h"
+#include "CircularBuffer.h"
 
-//***************************** Global Constants *******************************
-#define TIMEOUT 1000
+//*************************** Global Constants ********************************
+#define TIMEOUT 3000
+
+//*************************** Global Variables*********************************
+extern uint8 ucData;
+extern UART_RX_BUFFER gUartRxBuffer;
+extern UART_HandleTypeDef huart2;
+extern void *gFrameQueueHandle;
 
 //*********************Forward Declarations************************************
 bool UartSend(const uint8* pucData, uint32 ulLen);
-bool UartReceive(uint8* pucData, uint32 ulLen, uint32 ulTimeoutMs);
+bool UartIntrInit(void *pvUartHandler, uint8 *pucBuffer, uint16 unBufferSize);
+bool InitUartFrameQueue(void);
 
 #endif // UARTDRIVER_H
 
