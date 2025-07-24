@@ -12,6 +12,10 @@
 #ifndef UART_FRAME_RECEIVER_H
 #define UART_FRAME_RECEIVER_H
 
+//***************************** Global Constants ******************************
+#define UART_FRAME_RECEIVER_TASK_STACK_SIZE		5120
+#define UART_FRAME_RECEIVER_TASK_NAME		    "UartFrameReceiverTask"
+
 //**************************** Forward Declarations ***************************
 void UartFrameReceiverTask(void *pvArgs);
 

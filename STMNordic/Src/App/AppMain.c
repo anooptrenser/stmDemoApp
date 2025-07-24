@@ -43,7 +43,7 @@ void AppMain(void)
     }
 
     // Create all tasks using the function table
-    if (!TaskInit())
+    if (!InitTasks())
     {
         printf("Task initialization failed!\r\n");
     }
