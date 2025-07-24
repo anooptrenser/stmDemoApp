@@ -24,7 +24,7 @@
 // Outputs  : None
 // Returns  : uint8     - Calculated checksum
 //*****************************************************************************
-uint8 CalcChecksum(const uint8* pucData, uint32 ulLen)
+uint8 UartProtoCalcChecksum(const uint8* pucData, uint32 ulLen)
 {
     uint8 ucSum = 0U;
     uint32 ulIdx = 0U;
@@ -48,7 +48,7 @@ uint8 CalcChecksum(const uint8* pucData, uint32 ulLen)
 // Outputs  : None
 // Returns  : uint32      - Number of bytes written, 0 if error
 //*****************************************************************************
-uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBufSize)
+uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBufSize)
 {
     uint32 ulTotalLen = 0U;
 
@@ -85,18 +85,18 @@ uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBu
 // Outputs : None
 // Returns : bool    - TRUE if frame sent successfully, FALSE otherwise
 //*****************************************************************************
-bool SendDataFrame(const DATA_FRAME* psFrame)
+bool UartProtoSendFrame(const DATA_FRAME* psFrame)
 {
     bool blStatus = false;
     uint8 ucFrameBuf[MAX_FRAME_SIZE + FRAME_HEADER_SIZE + 1] = {0}; // Frame only
-    uint8 ucRawBuf[MAX_RAW_FRAME_LEN] = {0};                        // With start/stop
+    uint8 ucRawBuf[MAX_RAW_FRAME_LEN] = {0};                   
     uint32 ulFrameLen = 0U;
     uint32 ulTotalLen = 0U;
 
     if (psFrame != NULL)
     {
-        // Step 1: Build the unframed raw payload
-        ulFrameLen = BuildDataFrame(psFrame, ucFrameBuf, sizeof(ucFrameBuf));
+        // Build the unframed raw payload
+        ulFrameLen = UartProtoBuildFrame(psFrame, ucFrameBuf, sizeof(ucFrameBuf));
 
         if (ulFrameLen != 0U)
         {
@@ -106,7 +106,7 @@ bool SendDataFrame(const DATA_FRAME* psFrame)
             memcpy(&ucRawBuf[1], ucFrameBuf, ulFrameLen);
             ucRawBuf[ulFrameLen + 1] = UART_STOP_BYTE;
 
-            // Step 3: Print for debugging
+            // Print for debugging
             printf("CMD=0x%02X, TYPE=0x%02X, LEN=%lu, SEQ=%u, CHK=0x%02X",
                        psFrame->ucCmd,
                        psFrame->ucType,
@@ -115,7 +115,7 @@ bool SendDataFrame(const DATA_FRAME* psFrame)
                        psFrame->ucChecksum);
             HexDump(ucRawBuf, ulTotalLen);
 
-            // Step 4: Send over UART
+            // Send over UART
             blStatus = UartSend(ucRawBuf, ulTotalLen);
 
             if (!blStatus)
@@ -129,7 +129,7 @@ bool SendDataFrame(const DATA_FRAME* psFrame)
         }
         else
         {
-            printf("BuildDataFrame returned zero length.");
+            printf("UartProtoBuildFrame returned zero length.");
         }
     }
     else

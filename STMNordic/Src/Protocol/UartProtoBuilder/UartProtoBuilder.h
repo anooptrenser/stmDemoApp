@@ -50,9 +50,9 @@ typedef struct
 } DATA_FRAME;
 
 //************************** Function Declarations ****************************
-uint8 CalcChecksum(const uint8* pucData, uint32 ulLen);
-uint32 BuildDataFrame(const DATA_FRAME* psFrame, uint8* ucbuffer, uint32 maxBufSize);
-bool SendDataFrame(const DATA_FRAME* psFrame);
+uint8 UartProtoCalcChecksum(const uint8* pucData, uint32 ulLen);
+uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucbuffer, uint32 maxBufSize);
+bool UartProtoSendFrame(const DATA_FRAME* psFrame);
 
 #endif
 

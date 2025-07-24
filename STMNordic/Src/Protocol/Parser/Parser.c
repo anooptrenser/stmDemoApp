@@ -11,23 +11,24 @@
 //*****************************************************************************
 //*********************Include Files*******************************************
 #include <string.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include "Parser.h"
 #include "UartDriver.h"
 #include "common.h"
+#include <stdlib.h>
 
-//*****************************************************************************
-// Function : ValidateChecksum
-// Purpose  : Validates the checksum of a buffer using CalcChecksum
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Validates the checksum of a buffer using UartProtoCalcChecksum
 // Inputs   : pucValue           - Data buffer pointer
 //            ulLength           - Number of bytes in buffer
 //            ucReceivedChecksum - Received checksum to validate against
 // Outputs  : None
 // Returns  : bool               - TRUE if checksum matches, FALSE otherwise
 //*****************************************************************************
-bool ValidateChecksum(const uint8* pucValue, uint32 ulLength, uint8 ucReceivedChecksum)
+bool ParseValidateChecksum(const uint8* pucValue, uint32 ulLength, uint8 ucReceivedChecksum)
 {
-    uint8 calc = CalcChecksum(pucValue, ulLength);
+    uint8 calc = UartProtoCalcChecksum(pucValue, ulLength);
     return (calc == ucReceivedChecksum);
 }
 
@@ -50,34 +51,32 @@ void ParseHeader(const uint8* pucHeader, DATA_FRAME* psFrame)
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose  : Fills value pointer, extracts checksum, and validates integrity
-// Inputs   : psFrame     - Frame to fill
-//            pucBuffer   - Buffer containing value and checksum
-// Outputs  : None
-// Returns  : bool        - TRUE if checksum matches, FALSE otherwise
+// Purpose : Allocate memory and copy payload data into frame structure.
+// Inputs  : pFrame     - Pointer to DATA_FRAME struct to store payload pointer.
+//           pucPayload - Pointer to raw payload data buffer.
+// Outputs : None
+// Return  : true if payload is empty or allocation and copy succeed,
+//           false if memory allocation fails.
+// Notes   : Caller must free pFrame->pucValue when no longer needed.
+//           Handles zero-length payload as a special case.
 //*****************************************************************************
-bool ValidateAndExtractValue(DATA_FRAME* psFrame, const uint8* pucBuffer)
+bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload)
 {
-    bool blValid = false;
-
-    if ((psFrame != NULL) && (pucBuffer != NULL))
+    if (pFrame->ulLength == 0)
     {
-        if (psFrame->ulLength > 0U)
-        {
-            psFrame->pucValue = (uint8*)pucBuffer;
-        }
-        else
-        {
-            psFrame->pucValue = NULL;
-        }
-
-        psFrame->ucChecksum = pucBuffer[psFrame->ulLength];
-
-        // Use ValidateChecksum for validation
-        blValid = ValidateChecksum(psFrame->pucValue, psFrame->ulLength, psFrame->ucChecksum);
+        pFrame->pucValue = NULL;
+        return true;
     }
 
-    return blValid;
+    pFrame->pucValue = malloc(pFrame->ulLength);
+    if (pFrame->pucValue == NULL)
+    {
+        printf("[ERROR] Memory allocation failed\n\r");
+        return false;
+    }
+
+    memcpy(pFrame->pucValue, pucPayload, pFrame->ulLength);
+    return true;
 }
 
 // EOF
