@@ -20,7 +20,6 @@
 
 //************************** Function Declarations ****************************
 bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs);
-bool SendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLength);
 bool WaitForAckWithRetry(const uint16 unSeqNum);
 bool WaitForFrameFromQueue(DATA_FRAME* psFrame, uint32 ulTimeoutMs);
 

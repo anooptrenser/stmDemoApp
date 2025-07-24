@@ -37,7 +37,7 @@ UART_RX_BUFFER gUartRxBuffer = {0};
 // Return  : bool - true if queue created successfully, false otherwise
 // Notes   :
 //**********************************************************************************
-bool InitUartFrameQueue(void)
+bool UartFrameQueueInit(void)
 {
     bool blResult = true;
     
@@ -85,7 +85,7 @@ bool UartIntrInit(void *pvUartHandler, uint8 *pucBuffer, uint16 unBufferSize)
         	bReturn = true;
         }
     }
-
+    
     return bReturn;
 }
 

@@ -16,7 +16,11 @@
 //******************************* Include Files *******************************
 #include <stdbool.h>
 
-//*********************Forward Declarations************************************
+//**************************** Forward Declarations ***************************
+
+//***************************** Function Declaration **************************
 bool UartSubsystemInit(void);
 
 #endif // UART_DRIVER_INIT_H
+
+//EOF

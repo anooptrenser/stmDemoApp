@@ -32,7 +32,7 @@ extern void *gFrameQueueHandle;
 //*********************Forward Declarations************************************
 bool UartSend(const uint8* pucData, uint32 ulLen);
 bool UartIntrInit(void *pvUartHandler, uint8 *pucBuffer, uint16 unBufferSize);
-bool InitUartFrameQueue(void);
+bool UartFrameQueueInit(void);
 
 #endif // UARTDRIVER_H
 

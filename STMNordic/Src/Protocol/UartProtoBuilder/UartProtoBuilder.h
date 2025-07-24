@@ -53,6 +53,7 @@ typedef struct
 uint8 UartProtoCalcChecksum(const uint8* pucData, uint32 ulLen);
 uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucbuffer, uint32 maxBufSize);
 bool UartProtoSendFrame(const DATA_FRAME* psFrame);
+bool UartProtoSendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLength);
 
 #endif
 

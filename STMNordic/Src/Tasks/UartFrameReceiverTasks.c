@@ -9,6 +9,7 @@
 // Date     : 22-07-2025
 //
 //*****************************************************************************
+
 //******************************* Include Files *******************************
 #include "CircularBuffer.h"
 #include "Parser.h"
@@ -19,127 +20,135 @@
 #include "OSQueue.h"
 #include "Tmp.h"
 #include "UartDriver.h"
+#include <stdlib.h>
 
 //***************************** Global Variables ******************************
-static uint8 s_frameBuffer[MAX_RAW_FRAME_LEN] = {0};
-static uint16 s_frameIndex = 0;
-static bool s_frameActive = false;
+static uint8 s_ucFrameBuffer[MAX_RAW_FRAME_LEN] = {0};
+static uint16 s_unFrameIndex = 0;
+static bool s_blFrameActive = false;
 
 //************************ Static Function Prototypes *************************
-static bool UartIsStartByte(uint8 byte);
-static bool UartIsStopByte(uint8 byte);
+static bool UartIsStartByte(uint8 ucByte);
+static bool UartIsStopByte(uint8 ucByte);
 static void UartStartNewFrame(void);
 static void UartResetFrameState(void);
-static void UartFrameBufferAppend(uint8 byte);
-static void UartFrameProcess(void);
+static void UartFrameBufferAppend(uint8 ucByte);
+static bool UartFrameProcess(void);
+static bool EnqueueFrame(DATA_FRAME* psFrame);
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Thread to extract frames from UART RX circular buffer and send to queue
-// Inputs  : pvArgs - Not used
+// Purpose : UART frame receiver task reading bytes from UART RX circular buffer 
+//           and extracting valid frames using start/stop delimiters.
+// Inputs  : pvArgs - unused task parameter pointer
 // Outputs : None
 // Return  : None
-// Notes   : Runs as RTOS task under FreeRTOS. Processes bytes continuously
-//           using start/stop delimiters. Calls internal frame extraction logic.
+// Notes   : Runs as an RTOS task continuously processing UART data stream.
 //*****************************************************************************
 void UartFrameReceiverTask(void *pvArgs)
 {
     (void)pvArgs;
-    uint8 receivedByte = 0;
+    uint8 ucReceivedByte = 0;
 
     while (1)
     {
-        if (!UartRxBufferPop(&gUartRxBuffer, &receivedByte)) 
+        if (!UartRxBufferPop(&gUartRxBuffer, &ucReceivedByte))
         {
             OsTaskDelay(1);
             continue;
         }
 
-        if (!s_frameActive)
+        if (!s_blFrameActive)
         {
-            if (UartIsStartByte(receivedByte)) 
+            if (UartIsStartByte(ucReceivedByte))
             {
                 UartStartNewFrame();
             }
             continue;
         }
 
-        if (UartIsStopByte(receivedByte)) 
+        if (UartIsStopByte(ucReceivedByte))
         {
-            UartFrameProcess();
+            bool blProcessSuccess = UartFrameProcess(); 
+             
+            if (!blProcessSuccess)
+            {
+                printf("[ERROR] Frame processing failed\n");
+            }
+
             UartResetFrameState();
             continue;
         }
 
-        UartFrameBufferAppend(receivedByte);
+        UartFrameBufferAppend(ucReceivedByte);
     }
 }
 
+
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Checks whether a received byte is a start-of-frame marker.
-// Inputs  : byte - The received byte from UART.
+// Purpose : Check if the given byte is the UART start-of-frame byte.
+// Inputs  : ucByte - The received byte from UART.
 // Outputs : None
-// Return  : true if byte == UART_START_BYTE (0xFF), else false.
-// Notes   : Used to identify the beginning of a new frame.
+// Return  : true if equal to UART_START_BYTE (0xFF), false otherwise.
+// Notes   : Used by frame receiver to detect start of a new frame.
 //*****************************************************************************
-static bool UartIsStartByte(uint8 byte)
+static bool UartIsStartByte(uint8 ucByte)
 {
-    return (byte == UART_START_BYTE);
+    return (ucByte == UART_START_BYTE);
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Checks whether a received byte is a stop-of-frame marker.
-// Inputs  : byte - The received byte from UART.
+// Purpose : Check if the given byte is the UART stop-of-frame byte.
+// Inputs  : ucByte - The received byte from UART.
 // Outputs : None
-// Return  : true if byte == UART_STOP_BYTE (0x0E), else false.
-// Notes   : Used to identify the end of a frame to trigger frame decoding.
+// Return  : true if equal to UART_STOP_BYTE (0x0E), false otherwise.
+// Notes   : Used by frame receiver to detect frame end.
 //*****************************************************************************
-static bool UartIsStopByte(uint8 byte)
+static bool UartIsStopByte(uint8 ucByte)
 {
-    return (byte == UART_STOP_BYTE);
+    return (ucByte == UART_STOP_BYTE);
 }
 
-
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Initializes internal state for capturing new UART frame.
+// Purpose : Initialize/reset frame parsing buffer and state on start byte detection.
 // Inputs  : None
 // Outputs : None
 // Return  : None
-// Notes   : Called when a start byte is detected. Resets frame index and 
-//           activates capture.
+// Notes   : Called to begin capturing a new frame.
 //*****************************************************************************
 static void UartStartNewFrame(void)
 {
-    s_frameIndex = 0;
-    s_frameActive = true;
+    s_unFrameIndex = 0;
+    s_blFrameActive = true;
     printf("[RX] Start byte detected, starting frame\n");
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Resets internal parser state to prepare for next frame.
+// Purpose : Reset internal frame parsing state after frame completion or error.
 // Inputs  : None
 // Outputs : None
 // Return  : None
-// Notes   : Called after valid or invalid frame completion, or overflow.
+// Notes   : Prepares task for next frame capture.
 //*****************************************************************************
 static void UartResetFrameState(void)
 {
-    s_frameIndex = 0;
-    s_frameActive = false;
+    s_unFrameIndex = 0;
+    s_blFrameActive = false;
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Appends byte to current in-progress frame buffer.
-// Inputs  : byte - One byte from UART data stream to store
+// Purpose : Append one byte to the current frame buffer being captured.
+// Inputs  : ucByte - Byte to append from UART stream.
 // Outputs : None
 // Return  : None
-// Notes   : If buffer overflows, the frame is discarded and state resets.
+// Notes   : Discards frame and resets state on buffer overflow.
 //*****************************************************************************
-static void UartFrameBufferAppend(uint8 byte)
+static void UartFrameBufferAppend(uint8 ucByte)
 {
-    if (s_frameIndex < sizeof(s_frameBuffer)) 
+    if (s_unFrameIndex < sizeof(s_ucFrameBuffer)) 
     {
-        s_frameBuffer[s_frameIndex++] = byte;
-    } else 
+        s_ucFrameBuffer[s_unFrameIndex++] = ucByte;
+    }
+    else 
     {
         printf("[ERROR] Frame buffer overflow — discarding frame\n");
         UartResetFrameState();
@@ -147,94 +156,102 @@ static void UartFrameBufferAppend(uint8 byte)
 }
 
 //******************************.FUNCTION_HEADER.******************************
-// Purpose : Processes completed UART frame on detecting STOP byte.
-// Inputs  : None
+// Purpose : Send parsed and validated frame to the frame queue for processing.
+// Inputs  : psFrame - Pointer to the DATA_FRAME struct to enqueue.
 // Outputs : None
-// Return  : None
-// Notes   : Parses header, validates payload length and checksum, optionally
-//           allocates memory and enqueues the frame to message queue.
-//           Handles all frame consistency checks and errors internally.
+// Return  : true if successfully enqueued, false otherwise.
+// Notes   : On enqueue failure, frees allocated payload memory to avoid leaks.
 //*****************************************************************************
-static void UartFrameProcess(void)
+static bool EnqueueFrame(DATA_FRAME *psFrame)
 {
-    DATA_FRAME frame = {0};
-    uint8* pucHeader = NULL;
-    uint8* pucPayload = NULL;
-    uint8 ucChecksum = 0;
-    bool blValidFrame = false;
+    bool blRet = false;  
 
-    // 1. Basic minimum length check
-    if (s_frameIndex >= (FRAME_HEADER_SIZE + 1U)) // +1 for at least checksum
+    if (psFrame != NULL)
     {
-        pucHeader = &s_frameBuffer[0];
-        pucPayload = &s_frameBuffer[FRAME_HEADER_SIZE];
-        ucChecksum = s_frameBuffer[s_frameIndex - 1];
-
-        ParseHeader(pucHeader, &frame);
-        frame.ucStartByte = UART_START_BYTE;
-        frame.ucStopByte = UART_STOP_BYTE;
-        frame.ucChecksum = ucChecksum;
-
-        // 2. Length consistency check
-        uint32_t expectedLen = frame.ulLength + FRAME_HEADER_SIZE + 1U; // +1 for checksum
-        if (expectedLen == s_frameIndex)
+        if (OSQueueSend(gFrameQueueHandle, psFrame, 0))
         {
-            // 3. Checksum validation
-            if (ValidateChecksum(pucPayload, frame.ulLength, ucChecksum))
-            {
-                // 4. Payload allocation (if needed)
-                if (frame.ulLength > 0U)
-                {
-                    frame.pucValue = malloc(frame.ulLength);
-                    if (frame.pucValue != NULL)
-                    {
-                        memcpy(frame.pucValue, pucPayload, frame.ulLength);
-                        blValidFrame = true;
-                    }
-                    else
-                    {
-                        printf("[ERROR] Memory allocation failed\n\r");
-                    }
-                }
-                else
-                {
-                    frame.pucValue = NULL;
-                    blValidFrame = true;
-                }
-            }
-            else
-            {
-                printf("[ERROR] Checksum invalid\n");
-            }
+            printf("\n\r[OK] Frame received: CMD=0x%02X TYPE=0x%02X LEN=%lu SEQ=%u\n\r",
+                   psFrame->ucCmd, psFrame->ucType, psFrame->ulLength, psFrame->unSeqNum);
+            blRet = true;
         }
         else
         {
-            printf("[ERROR] Frame length mismatch (expected: %lu, actual: %u)\n",
-                   frame.ulLength, s_frameIndex - FRAME_HEADER_SIZE - 1U);
+            printf("[ERROR] Failed to enqueue frame\n\r");
+            if (psFrame->pucValue != NULL)
+            {
+                free(psFrame->pucValue);
+                psFrame->pucValue = NULL;
+            }
         }
+    }
+
+    return blRet;
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose : Processes a complete UART frame on detection of the stop byte.
+//           Validates header, length, checksum; copies payload; enqueues frame.
+// Inputs  : None (uses internal static frame buffer variables)
+// Outputs : None
+// Return  : true if frame processed and enqueued successfully, false otherwise
+// Notes   : Handles all validation, memory management, and error reporting internally.
+//*****************************************************************************
+static bool UartFrameProcess(void)
+{
+    DATA_FRAME sFrame = {0};
+    uint8 *pucHeader = NULL;
+    uint8 *pucPayload = NULL;
+    uint8 ucChecksum = 0;
+    uint32 ulExpectedLen = 0;
+    bool blValidFrame = false;
+    bool blRet = false;
+
+    if (s_unFrameIndex < (FRAME_HEADER_SIZE + 1U))
+    {
+        printf("[WARN] Frame too short — discarded\n");
+        blRet = false; 
     }
     else
     {
-        printf("[WARN] Frame too short — discarded\n");
+        pucHeader  = &s_ucFrameBuffer[0];
+        pucPayload = &s_ucFrameBuffer[FRAME_HEADER_SIZE];
+        ucChecksum = s_ucFrameBuffer[s_unFrameIndex - 1];
+
+        ParseHeader(pucHeader, &sFrame);
+        sFrame.ucStartByte = UART_START_BYTE;
+        sFrame.ucStopByte  = UART_STOP_BYTE;
+        sFrame.ucChecksum  = ucChecksum;
+
+        ulExpectedLen = sFrame.ulLength + FRAME_HEADER_SIZE + 1U;
+
+        if (ulExpectedLen != s_unFrameIndex)
+        {
+            printf("[ERROR] Frame length mismatch (expected: %lu, actual: %u)\n",
+                   sFrame.ulLength, s_unFrameIndex - FRAME_HEADER_SIZE - 1U);
+            blRet = false;
+        }
+        else if (!ParseValidateChecksum(pucPayload, sFrame.ulLength, ucChecksum))
+        {
+            printf("[ERROR] Checksum invalid\n");
+            blRet = false;
+        }
+        else if (!ParsePayload(&sFrame, pucPayload))
+        {
+            blRet = false;
+        }
+        else
+        {
+            blValidFrame = true;
+            blRet = true;  // All validations passed
+        }
     }
 
     if (blValidFrame)
     {
-        if (!OSQueueSend(gFrameQueueHandle, &frame, 0))
-        {
-            printf("[ERROR] Failed to enqueue frame\n\r");
-            if (frame.pucValue != NULL)
-            {
-                free(frame.pucValue);
-                frame.pucValue = NULL;
-            }
-        }
-        else
-        {
-            printf("\n\r[OK] Frame received: CMD=0x%02X TYPE=0x%02X LEN=%lu SEQ=%u\n\r",
-                   frame.ucCmd, frame.ucType, frame.ulLength, frame.unSeqNum);
-        }
+        blRet = EnqueueFrame(&sFrame);
     }
+
+    return blRet;
 }
 
-//EOF
+// EOF

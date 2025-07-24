@@ -29,7 +29,6 @@
 bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
 {
     DATA_FRAME stAck = {0};
-   // uint8 ackBuf[1] = {0};
     bool blStatus = false;
 
     blStatus = WaitForFrameFromQueue(&stAck, ulTimeoutMs);
@@ -57,35 +56,6 @@ bool WaitForAck(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
 
 return blStatus;
 
-}
-
-//******************************.FUNCTION_HEADER.******************************
-// Purpose  : Sends a data chunk as a frame with sequence number and checksum
-// Inputs   : unSeqNum  - Sequence number for the chunk
-//          : pucData   - Pointer to chunk data
-//          : ulLength  - Length of chunk data
-// Outputs  : None
-// Returns  : bool      - TRUE if frame sent successfully, FALSE otherwise
-//*****************************************************************************
-bool SendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLength)
-{
-    DATA_FRAME stData = {0};
-    uint8 ucChecksum = CalcChecksum(pucData, ulLength);
-
-    stData.ucCmd = CMD_TRANSFER;
-    stData.ucType = TYPE_DATA;
-    stData.ulLength = ulLength;
-    stData.unSeqNum = unSeqNum;
-    stData.pucValue = (uint8*)pucData;
-    stData.ucChecksum = ucChecksum;
-
-    if (!SendDataFrame(&stData))
-    {
-        printf("Error: SendDataFrame failed at seq %u\r\n", unSeqNum);
-        return false;
-    }
-
-    return true;
 }
 
 //******************************.FUNCTION_HEADER.******************************

@@ -1,4 +1,4 @@
-//******************************* InitTasks.c *************************************
+//******************************* Tasks.c *************************************
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
@@ -19,20 +19,30 @@
 #include "UartFrameReceiverTasks.h"
 #include "FileTransferTasks.h"
 
-//***************************** Local Variables *******************************
-static _sOsFactThreadAttributes sucUartFrameReceiverTaskAttr = 
-    {UART_FRAME_RECEIVER_TASK_NAME, MEDIUM, UART_FRAME_RECEIVER_TASK_STACK_SIZE};
-static _sOsFactThreadAttributes sucFileTransferMngrTaskAttr = 
-    {FILE_TRANSFER_MNGR_TASK_NAME, LOW, FILE_TRANSFER_MNGR_TASK_STACK_SIZE};
+//******************************* Local Types *********************************
+typedef struct
+{
+    uint8       *pucTaskName;    // Task Name
+    osThreadId_t Thread_Id;      // Thread ID
+    uint32       ulStackSize;    // Stack Size
+    uint32       ulPriority;     // Task Priority
+    void       (*pTaskFunc)(void *); // Thread Entry Function
+} TASKS;
 
-static _sTaskTable sTaskTable[] = {
-    {UART_FRAME_RECEIVER_TASK, &sucUartFrameReceiverTaskAttr, UartFrameReceiverTask, NULL},
-    {FILE_TRANSFER_MANAGER_TASK, &sucFileTransferMngrTaskAttr, FileTransferManagerTask, NULL}
+//***************************** Local Constants *******************************
+#define TASKS_MAX_SIZE   2
+#define STACK_SIZE       5120
+#define THREAD_PRIORITY_NORMAL  osPriorityNormal
+#define THREAD_PRIORITY_HIGH    osPriorityHigh
+
+//***************************** Local Variables *******************************
+static TASKS sTasks[TASKS_MAX_SIZE] =
+{
+    { (uint8 *)"UartReceiver",     0, STACK_SIZE, THREAD_PRIORITY_HIGH, UartFrameReceiverTask },
+    { (uint8 *)"FileTransferMgr",  0, STACK_SIZE, THREAD_PRIORITY_NORMAL, FileTransferManagerTask }
 };
 
 //****************************** Local Functions ******************************
-
-//*************************** Function Definition *****************************
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose : Initializes and starts all RTOS tasks defined in the task table
@@ -41,29 +51,35 @@ static _sTaskTable sTaskTable[] = {
 // Return  : bool - TRUE if all tasks created successfully, FALSE otherwise
 // Notes   : Called during system startup to launch application threads
 //******************************************************************************
-bool InitTasks(void)
+bool InitTask(void)
 {
-    bool bRetValue = false;
-    uint8_t ucIndex = 0;
-    uint32_t ulTaskTableLength = 0;
+    bool blAllCreated = false;
 
-    ulTaskTableLength = sizeof(sTaskTable) / sizeof(_sTaskTable);
-
-    for (ucIndex = 0; ucIndex < ulTaskTableLength; ucIndex++)
+    for (uint8 ucIdx = 0; ucIdx < TASKS_MAX_SIZE; ucIdx++)
     {
-        if (!OsFactCreateThread(sTaskTable[ucIndex].psTaskAttr,
-                                sTaskTable[ucIndex].pvTaskRoutine,
-                                sTaskTable[ucIndex].pvArgs))
+        osThreadAttr_t stAttr = {0};
+        stAttr.name       = (const char *)sTasks[ucIdx].pucTaskName;
+        stAttr.stack_size = sTasks[ucIdx].ulStackSize;
+        stAttr.priority   = (osPriority_t)sTasks[ucIdx].ulPriority;
+
+        sTasks[ucIdx].Thread_Id = osThreadNew(
+                                        sTasks[ucIdx].pTaskFunc,
+                                        NULL,
+                                        &stAttr);
+
+        if (sTasks[ucIdx].Thread_Id == NULL)
         {
-            break;  
+            printf("Error: Failed to create task: %s\r\n", sTasks[ucIdx].pucTaskName);
+            blAllCreated = false;
         }
         else
         {
-            bRetValue = true;  
+            printf("Task created: %s\r\n", sTasks[ucIdx].pucTaskName);
+            blAllCreated = true;
         }
     }
 
-    return bRetValue;
+    return blAllCreated;
 }
 
 //EOF

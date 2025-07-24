@@ -100,7 +100,7 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
 
         if (ulFrameLen != 0U)
         {
-            // Step 2: Wrap the frame with start/stop bytes
+            // Wrap the frame with start/stop bytes
             ulTotalLen = ulFrameLen + 2U;
             ucRawBuf[0] = UART_START_BYTE;
             memcpy(&ucRawBuf[1], ucFrameBuf, ulFrameLen);
@@ -138,6 +138,35 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
     }
 
     return blStatus;
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Sends a data chunk as a frame with sequence number and checksum
+// Inputs   : unSeqNum  - Sequence number for the chunk
+//          : pucData   - Pointer to chunk data
+//          : ulLength  - Length of chunk data
+// Outputs  : None
+// Returns  : bool      - TRUE if frame sent successfully, FALSE otherwise
+//*****************************************************************************
+bool UartProtoSendChunk(const uint16 unSeqNum, const uint8* pucData, const uint32 ulLength)
+{
+    DATA_FRAME stData = {0};
+    uint8 ucChecksum = UartProtoCalcChecksum(pucData, ulLength);
+
+    stData.ucCmd = CMD_TRANSFER;
+    stData.ucType = TYPE_DATA;
+    stData.ulLength = ulLength;
+    stData.unSeqNum = unSeqNum;
+    stData.pucValue = (uint8*)pucData;
+    stData.ucChecksum = ucChecksum;
+
+    if (!UartProtoSendFrame(&stData))
+    {
+        printf("Error: SendDataFrame failed at seq %u\r\n", unSeqNum);
+        return false;
+    }
+
+    return true;
 }
 
 // EOF

@@ -28,28 +28,32 @@
 //*****************************************************************************
 bool UartSubsystemInit(void)
 {
-    bool blSuccess = true;
+    bool blSuccess = false;
 
-    // Initialize circular buffer
-    if (!UartRxBufferInit(&gUartRxBuffer))
+    if (UartRxBufferInit(&gUartRxBuffer))
+    {
+        if (UartFrameQueueInit())
+        {
+            if (UartIntrInit(&huart2, &ucData, 1))
+            {
+                blSuccess = true;
+            }
+            else
+            {
+                printf("[UART INIT] Failed to start UART RX interrupt\n");
+            }
+        }
+        else
+        {
+            printf("[UART INIT] Failed to init UART frame queue\n");
+        }
+    }
+    else
     {
         printf("[UART INIT] Failed to init RX ring buffer\n");
-        blSuccess = false;
-    }
-
-    // Init frame queue for higher-level protocol dispatch (if used)
-    if (!InitUartFrameQueue())
-    {
-        printf("[UART INIT] Failed to init UART frame queue\n");
-        blSuccess = false;
-    }
-
-    // Start single-byte UART RX interrupt-based reception
-    if (!UartIntrInit(&huart2, &ucData, 1))
-    {
-        printf("[UART INIT] Failed to start UART RX interrupt\n");
-        blSuccess = false;
     }
 
     return blSuccess;
 }
+
+//EOF

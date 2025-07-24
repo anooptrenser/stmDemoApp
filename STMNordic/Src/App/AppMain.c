@@ -24,6 +24,7 @@
 #include "main.h"
 #include "OsFactory.h"
 #include "UartDriverInit.h"
+#include "InitTasks.h"
 
 //***************************** Global Variables ******************************
 
@@ -43,7 +44,7 @@ void AppMain(void)
     }
 
     // Create all tasks using the function table
-    if (!InitTasks())
+    if (!InitTask())
     {
         printf("Task initialization failed!\r\n");
     }

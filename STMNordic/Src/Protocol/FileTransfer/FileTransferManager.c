@@ -65,8 +65,6 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
     DATA_FRAME stInit = {0};
     DATA_FRAME stResp = {0};
     uint8 ucFileLen[FILE_LEN_BYTES] = {0};
-    //uint8 ucRespVal[FILE_LEN_BYTES] = {0};
-    bool blStatus = false;
     bool blSendResult = false;
     bool blRecvResult = false;
     bool blValidResp = false;
@@ -80,9 +78,9 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
         stInit.ulLength = FILE_LEN_BYTES;
         stInit.unSeqNum = SEQ_INIT;
         stInit.pucValue = ucFileLen;
-        stInit.ucChecksum = CalcChecksum(ucFileLen, stInit.ulLength);
+        stInit.ucChecksum = UartProtoCalcChecksum(ucFileLen, stInit.ulLength);
 
-        blSendResult = SendDataFrame(&stInit);
+        blSendResult = UartProtoSendFrame(&stInit);
 
         blRecvResult = WaitForFrameFromQueue(&stResp, DATA_SENDER_TIMEOUT_MS);
 
@@ -95,7 +93,6 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
             if (blValidResp == true)
             {
                 memcpy(pulMaxChunk, stResp.pucValue, FILE_LEN_BYTES);
-                blStatus = true;
             }
             // Free buffer here regardless
             if (stResp.pucValue != NULL)
@@ -141,7 +138,7 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
 
             memcpy(ucChunkBuf, &pucData[ulOffset], ulChunkLen);
 
-            if (!SendChunk(unSeqNum, ucChunkBuf, ulChunkLen))
+            if (!UartProtoSendChunk(unSeqNum, ucChunkBuf, ulChunkLen))
             {
                 break;
             }
