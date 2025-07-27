@@ -12,7 +12,13 @@
 #ifndef UART_FRAME_RECEIVER_H
 #define UART_FRAME_RECEIVER_H
 
-//**************************** Forward Declarations ***************************
+//******************************* Global Types ******************************** 
+
+//***************************** Global Constants ****************************** 
+
+//***************************** Global Variables ****************************** 
+
+//**************************** Function Declarations **************************
 void UartFrameReceiverTask(void *pvArgs);
 
 #endif // UART_FRAME_RECEIVER_H

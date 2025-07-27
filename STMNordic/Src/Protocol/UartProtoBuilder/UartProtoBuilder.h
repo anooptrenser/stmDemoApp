@@ -12,7 +12,7 @@
 #ifndef UART_PROTO_BUILDER_H
 #define UART_PROTO_BUILDER_H
 
-//*********************Include Files*******************************************
+//*************************** Include Files************************************
 #include "common.h"
 #include <stdbool.h>
 
@@ -33,7 +33,8 @@ typedef enum {
     TYPE_FILE_LENGTH = 0x01,
     TYPE_CHUNK_SIZE  = 0x02,
     TYPE_DATA        = 0x03,
-    TYPE_ACK         = 0x04
+    TYPE_ACK         = 0x04,
+    TYPE_COMPLETE    = 0x05
 } TYPE_TYPE;
 
 //************************** Data Structures **********************************

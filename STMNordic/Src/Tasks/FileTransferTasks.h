@@ -12,7 +12,13 @@
 #ifndef FILE_TRANSFER_TASKS_H
 #define FILE_TRANSFER_TASKS_H
 
-//**************************** Forward Declarations ***************************
+//******************************* Global Types ******************************** 
+
+//***************************** Global Constants ****************************** 
+
+//***************************** Global Variables ****************************** 
+
+//**************************** Function Declarations **************************
 void FileTransferManagerTask(void *pvArgs);
 
 #endif // FILE_TRANSFER_TASKS_H

@@ -12,15 +12,31 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-//*********************Include Files*******************************************
+//****************************** Include Files ********************************
 #include <stdbool.h>
 #include "UartProtoBuilder.h"
+
+//******************************* Global Types ******************************** 
+
+//***************************** Global Constants ****************************** 
+typedef enum {
+    UART_FRAME_RX_WAIT_START,
+    UART_FRAME_RX_HEADER,
+    UART_FRAME_RX_PAYLOAD,
+    UART_FRAME_RX_CHECKSUM,
+    UART_FRAME_RX_STOP
+} UART_FRAME_RX_STATE;
+
+//***************************** Global Variables ****************************** 
+
+//**************************** Forward Declarations ***************************
 
 //************************** Function Declarations ****************************
 void ParseHeader(const uint8* ucHeader, DATA_FRAME* psFrame);
 bool ParseValidateChecksum(const uint8* pucValue, uint32 ulLength, 
-					  uint8 ucReceivedChecksum);
+					  		uint8 ucReceivedChecksum);
 bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload);
+
 
 #endif // FRAME_PARSER_H
 

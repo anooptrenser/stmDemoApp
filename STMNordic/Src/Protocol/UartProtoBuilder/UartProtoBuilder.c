@@ -16,6 +16,13 @@
 #include "UartDriver.h"
 #include "AppMain.h"
 #include "Tmp.h"
+//******************************* Local Types ********************************* 
+
+//***************************** Local Constants ******************************* 
+
+//***************************** Local Variables ******************************* 
+
+//****************************** Local Functions ******************************
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Calculate 8-bit checksum of a provided buffer
@@ -106,13 +113,6 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
             memcpy(&ucRawBuf[1], ucFrameBuf, ulFrameLen);
             ucRawBuf[ulFrameLen + 1] = UART_STOP_BYTE;
 
-            // Print for debugging
-            printf("CMD=0x%02X, TYPE=0x%02X, LEN=%lu, SEQ=%u, CHK=0x%02X",
-                       psFrame->ucCmd,
-                       psFrame->ucType,
-                       psFrame->ulLength,
-                       psFrame->unSeqNum,
-                       psFrame->ucChecksum);
             HexDump(ucRawBuf, ulTotalLen);
 
             // Send over UART
@@ -124,7 +124,7 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
             }
             else
             {
-                printf("Frame sent successfully (%lu bytes)", ulTotalLen);
+                printf("Frame sent successfully (%lu bytes)\n\r", ulTotalLen);
             }
         }
         else

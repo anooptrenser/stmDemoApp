@@ -13,10 +13,16 @@
 #ifndef APPMAIN_H
 #define APPMAIN_H
 
-//*********************Include Files*******************************************
+//******************************* Include Files *******************************
 #include "common.h"
 
-//*********************Forward Declarations************************************
+//******************************* Global Types ******************************** 
+
+//***************************** Global Constants ****************************** 
+
+//***************************** Global Variables ****************************** 
+
+//***************************** Function Declarations**************************
 void AppMain(void);
 void FileTransferManagerTask(void *argument);
 #endif // APPMAIN_H

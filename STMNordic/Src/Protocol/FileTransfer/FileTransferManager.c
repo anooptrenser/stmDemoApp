@@ -9,7 +9,7 @@
 // Date     : 15-07-2025
 //
 //*****************************************************************************
-//*********************Include Files*******************************************
+//************************* Include Files *************************************
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,11 +17,101 @@
 #include "UartProtoBuilder.h"
 #include "Parser.h"
 #include "UartDriver.h"
-#include "FileTransferHelper.h"
+//******************************* Local Types ********************************* 
 
-//************************* Local Function Prototypes *************************
+//***************************** Local Constants ******************************* 
+
+//***************************** Local Variables ******************************* 
+
+//****************************** Local Functions ******************************
 static bool InitFileTransfer(uint32 ulFileLen, uint32* pulMaxChunk);
 static bool FileTransfer(const uint8* pucData, const uint32 ulLen, uint32 ulMaxChunk);
+static bool FileTransferComplete(void);
+static bool FileTransferAckWait(uint16 unExpectedSeqNum, uint32 ulTimeoutMs);
+static bool FileTransferFrameFromQueue(DATA_FRAME* psFrame, uint32 ulTimeoutMs);
+static bool FileTransferAckWaitWithRetry(const uint16 unSeqNum);
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Waits for ACK for a given sequence number from receiver
+// Inputs   : unExpectedSeqNum - Expected ACK sequence number
+//          : ulTimeoutMs      - Timeout for ACK wait
+// Outputs  : None
+// Returns  : bool             - TRUE if correct ACK received, FALSE otherwise
+//*****************************************************************************
+static bool FileTransferAckWait(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
+{
+    DATA_FRAME stAck = {0};
+    bool blStatus = false;
+
+    blStatus = FileTransferFrameFromQueue(&stAck, ulTimeoutMs);
+
+    if (blStatus == true)
+    {
+        if ((stAck.ucCmd == CMD_TRANSFER) &&
+            (stAck.ucType == TYPE_ACK) &&
+            (stAck.unSeqNum == unExpectedSeqNum) &&
+            (stAck.ulLength == 0U))
+        {
+            blStatus = true;
+        }
+        else
+        {
+            blStatus = false;
+        }
+
+        if (stAck.pucValue != NULL)
+        {
+            free(stAck.pucValue);
+            stAck.pucValue = NULL;
+        }
+    }
+
+return blStatus;
+
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Waits for a frame from the protocol queue with timeout
+// Inputs   : psFrame      - Pointer to DATA_FRAME structure to fill
+//          : ulTimeoutMs  - Timeout in milliseconds to wait for frame
+// Outputs  : None
+// Return   : bool         - TRUE if frame received, FALSE if timeout or error
+// Notes    : Uses OSQueueRecv to receive from gFrameQueueHandle
+//*****************************************************************************
+static bool FileTransferFrameFromQueue(DATA_FRAME* psFrame, uint32 ulTimeoutMs)
+{
+    return OSQueueRecv(gFrameQueueHandle, psFrame, ulTimeoutMs);
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Waits for ACK with retry mechanism for a given sequence number
+// Inputs   : unSeqNum - Sequence number to wait for ACK
+// Outputs  : None
+// Returns  : bool     - TRUE if ACK received within retries, FALSE otherwise
+//*****************************************************************************
+static bool FileTransferAckWaitWithRetry(const uint16 unSeqNum)
+{
+    bool blAckReceived = false;
+
+    for (int nRetry = 0; nRetry < MAX_ACK_RETRIES; ++nRetry)
+    {
+        if (FileTransferAckWait(unSeqNum, DATA_SENDER_TIMEOUT_MS))
+        {
+            blAckReceived = true;
+            break;
+        } else {
+            printf("Warning: ACK not received for seq %u (retry %d/%d)\r\n",
+                   unSeqNum, nRetry + 1, MAX_ACK_RETRIES);
+        }
+    }
+
+    if (!blAckReceived)
+    {
+        printf("Error: Retries exceeded for seq %u\r\n", unSeqNum);
+    }
+
+    return blAckReceived;
+}
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Application entry for the protocol file transfer task.
@@ -32,7 +122,7 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, uint32 ulMaxC
 //*****************************************************************************
 bool FileTransferManager(const uint8* pucData, uint32 ulFileLen)
 {
-    uint32 ulMaxChunk = 0U;
+	uint32 ulMaxChunk = 0U;
     bool blStatus = false;
 
     blStatus = InitFileTransfer(ulFileLen, &ulMaxChunk);
@@ -44,9 +134,22 @@ bool FileTransferManager(const uint8* pucData, uint32 ulFileLen)
     else
     {
         blStatus = FileTransfer(pucData, ulFileLen, ulMaxChunk);
+        
         if (blStatus != true)
         {
             printf("Error: FileTransfer failed\r\n");
+        }
+        else
+        {
+            // Send transfer complete notification
+            if (FileTransferComplete())
+            {
+                printf("File transfer completed successfully\r\n");
+            }
+            else
+            {
+                printf("Warning: Transfer complete notification failed\r\n");             
+            }
         }
     }
 
@@ -82,7 +185,7 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
 
         blSendResult = UartProtoSendFrame(&stInit);
 
-        blRecvResult = WaitForFrameFromQueue(&stResp, DATA_SENDER_TIMEOUT_MS);
+        blRecvResult = FileTransferFrameFromQueue(&stResp, DATA_SENDER_TIMEOUT_MS);
 
         if (blRecvResult == true)
         {
@@ -143,7 +246,7 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
                 break;
             }
 
-            if (!WaitForAckWithRetry(unSeqNum))
+            if (!FileTransferAckWaitWithRetry(unSeqNum))
             {
                 break;
             }
@@ -151,6 +254,7 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
             ulOffset += ulChunkLen;
             unSeqNum++;
 
+            // Handle sequence number rollover (1 to 0xFFFF, skip 0)
             if (unSeqNum == 0) 
             {
                 unSeqNum = 1;
@@ -164,6 +268,39 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
     }
 
     return blStatus;
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Send transfer complete notification to receiver
+// Inputs   : None
+// Outputs  : None
+// Returns  : bool - TRUE if notification sent successfully, FALSE otherwise
+// Notes    : Sends a TYPE_COMPLETE frame to signal end of transfer
+//*****************************************************************************
+static bool FileTransferComplete(void)
+{
+    DATA_FRAME stComplete = {0};
+    bool blSendResult = false;
+
+    stComplete.ucCmd = CMD_TRANSFER;
+    stComplete.ucType = TYPE_COMPLETE;
+    stComplete.ulLength = 0U;  // No payload needed
+    stComplete.unSeqNum = SEQ_COMPLETE;
+    stComplete.pucValue = NULL;
+    stComplete.ucChecksum = UartProtoCalcChecksum(NULL, 0U);
+
+    blSendResult = UartProtoSendFrame(&stComplete);
+    
+    if (blSendResult)
+    {
+        printf("Transfer complete notification sent\r\n");
+    }
+    else
+    {
+        printf("Failed to send transfer complete notification\r\n");
+    }
+
+    return blSendResult;
 }
 
 // EOF

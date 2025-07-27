@@ -10,6 +10,7 @@
 //
 //*****************************************************************************
 //*********************Include Files*******************************************
+
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -17,6 +18,15 @@
 #include "UartDriver.h"
 #include "common.h"
 #include <stdlib.h>
+#include "UartProtoBuilder.h"
+
+//******************************* Local Types ********************************* 
+
+//***************************** Local Constants ******************************* 
+
+//***************************** Local Variables ******************************* 
+
+//****************************** Local Functions ******************************
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Validates the checksum of a buffer using UartProtoCalcChecksum
@@ -56,27 +66,43 @@ void ParseHeader(const uint8* pucHeader, DATA_FRAME* psFrame)
 //           pucPayload - Pointer to raw payload data buffer.
 // Outputs : None
 // Return  : true if payload is empty or allocation and copy succeed,
-//           false if memory allocation fails.
+//           false if invalid parameters or memory allocation fails.
 // Notes   : Caller must free pFrame->pucValue when no longer needed.
 //           Handles zero-length payload as a special case.
+//           Single exit point as per coding guidelines.
 //*****************************************************************************
 bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload)
 {
-    if (pFrame->ulLength == 0)
+    bool blResult = false;
+    
+    // Null pointer checks
+    if ((pFrame == NULL) || (pucPayload == NULL && pFrame->ulLength > 0))
     {
+        printf("[ERROR] Invalid parameters in ParsePayload\n\r");
+    }
+    else if (pFrame->ulLength == 0)
+    {
+        // Handle zero-length payload case
         pFrame->pucValue = NULL;
-        return true;
+        blResult = true;
     }
-
-    pFrame->pucValue = malloc(pFrame->ulLength);
-    if (pFrame->pucValue == NULL)
+    else
     {
-        printf("[ERROR] Memory allocation failed\n\r");
-        return false;
+        // Allocate memory for payload
+        pFrame->pucValue = malloc(pFrame->ulLength);
+        if (pFrame->pucValue == NULL)
+        {
+            printf("[ERROR] Memory allocation failed\n\r");
+        }
+        else
+        {
+            // Copy payload data
+            memcpy(pFrame->pucValue, pucPayload, pFrame->ulLength);
+            blResult = true;
+        }
     }
-
-    memcpy(pFrame->pucValue, pucPayload, pFrame->ulLength);
-    return true;
+    
+    return blResult;
 }
 
 // EOF

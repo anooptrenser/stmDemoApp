@@ -1,28 +1,24 @@
-//******************************* Tasks.h *************************************
+//*************************** UartFrameReceiver *******************************
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
-//
-// File     : Tasks.h
-// Summary  : Header for the RTOS task initialization function
-// Author   : Anoop G
-// Date     : 22-07-2025
-//
-//*****************************************************************************
-#ifndef TASKS_H
-#define TASKS_H
+
+#ifndef UART_FRAME_RECEIVER_H
+#define UART_FRAME_RECEIVER_H
+
 //******************************* Include Files *******************************
-#include <stdbool.h>
+#include <stdint.h>
+#include "UartProtoBuilder.h"
 
 //******************************* Global Types ******************************** 
 
-//***************************** Global Constants ****************************** 
-
 //***************************** Global Variables ****************************** 
 
-//**************************** Function Declarations **************************
-bool InitTask(void);
+//*************************** Global Constants ********************************
 
-#endif // TASKS_H
+//**************************** Function Declarations **************************
+void UartFrameReceiverLoop(void);
+
+#endif // UART_FRAME_RECEIVER_H
 
 //EOF
