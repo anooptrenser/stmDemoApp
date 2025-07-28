@@ -46,6 +46,7 @@ static void UartFrameHandleChecksum(uint8 ucByte);
 static void UartFrameHandleStop(uint8 ucByte);
 static void UartFrameProcessFull(void);
 static bool UartFrameEnqueue(DATA_FRAME* psFrame);
+static void UartFrameResetState(void);
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : UART frame receiver RTOS task (state machine, compact, style-compliant).
@@ -62,6 +63,7 @@ void UartFrameReceiverTask(void *pvArgs)
 {
     (void)pvArgs;
     uint8 ucReceivedByte = 0U;
+
     while (1)
     {
         if (!UartRxBufferPop(&gUartRxBuffer, &ucReceivedByte)) {
@@ -103,10 +105,7 @@ void UartFrameReceiverTask(void *pvArgs)
             
             default:
             {
-                seRxState = UART_FRAME_RX_WAIT_START;
-                sunFrameIndex = 0;
-                sulPayloadLen = 0;
-                memset(&sPartialFrame, 0, sizeof(sPartialFrame));  
+            	UartFrameResetState();
                 break;
             }
         }
@@ -115,10 +114,7 @@ void UartFrameReceiverTask(void *pvArgs)
         if (sunFrameIndex >= MAX_RAW_FRAME_LEN) 
         {
             printf("[UartFrameReceiver] Buffer overflow, resetting.\n");
-            seRxState = UART_FRAME_RX_WAIT_START;
-            sunFrameIndex = 0;
-            sulPayloadLen = 0;
-            memset(&sPartialFrame, 0, sizeof(sPartialFrame));  // Clear partial frame
+            UartFrameResetState();
         }
     }
 }
@@ -132,13 +128,27 @@ void UartFrameReceiverTask(void *pvArgs)
 //******************************************************************************
 static void UartFrameHandleWaitStart(uint8 ucByte)
 {
-    if (ucByte == UART_START_BYTE)
+    if (UART_START_BYTE == ucByte)
     {
         sucFrameBuffer[0] = ucByte;
         sunFrameIndex = 1;
         sulPayloadLen = 0;
         seRxState = UART_FRAME_RX_HEADER;
     }
+}
+
+//******************************.FUNCTION_HEADER.******************************
+// Purpose  : Reset frame reception state machine to initial state
+// Inputs   : None
+// Outputs  : Clears all state variables and frame buffer
+// Returns  : None
+//*****************************************************************************
+static void UartFrameResetState(void)
+{
+    seRxState = UART_FRAME_RX_WAIT_START;
+    sunFrameIndex = 0;
+    sulPayloadLen = 0;
+    memset(&sPartialFrame, 0, sizeof(sPartialFrame));
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -152,20 +162,24 @@ static void UartFrameHandleWaitStart(uint8 ucByte)
 static void UartFrameHandleHeader(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
+
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1))
     {
         uint8* pucHeader = &sucFrameBuffer[1];
         ParseHeader(pucHeader, &sPartialFrame);  // Parse once and store
         sulPayloadLen = sPartialFrame.ulLength;
-        if (sulPayloadLen > MAX_FRAME_SIZE) {
+
+        if (sulPayloadLen > MAX_FRAME_SIZE) 
+        {
             printf("[UartFrameReceiver] Payload too large, discarding.\n");
             seRxState = UART_FRAME_RX_WAIT_START;
             sunFrameIndex = 0;
             sulPayloadLen = 0;
             memset(&sPartialFrame, 0, sizeof(sPartialFrame));  // Clear partial frame
-        } else {
+        } else 
+        {
             seRxState = (sulPayloadLen > 0U) ?
-                UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
+                        UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
         }
     }
 }
@@ -181,6 +195,7 @@ static void UartFrameHandleHeader(uint8 ucByte)
 static void UartFrameHandlePayload(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
+
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1U + sulPayloadLen)) 
     {
         seRxState = UART_FRAME_RX_CHECKSUM;
@@ -210,7 +225,8 @@ static void UartFrameHandleChecksum(uint8 ucByte)
 static void UartFrameHandleStop(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
-    if (ucByte == UART_STOP_BYTE)
+
+    if (UART_STOP_BYTE == ucByte)
     {
         UartFrameProcessFull();
     }
@@ -238,7 +254,6 @@ static void UartFrameProcessFull(void)
     uint8* pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
     uint8  ucChecksum = sucFrameBuffer[sunFrameIndex - 2];
     uint8  ucStop = sucFrameBuffer[sunFrameIndex - 1];
-
     sFrame.ucStartByte = UART_START_BYTE;
     sFrame.ucStopByte  = ucStop;
     sFrame.ucChecksum  = ucChecksum;
@@ -258,7 +273,8 @@ static void UartFrameProcessFull(void)
         printf("[UartFrameReceiver] Frame validation failed/discarded.\n");
     }
 
-    if (sFrame.pucValue != NULL) {
+    if (sFrame.pucValue != NULL) 
+    {
         free(sFrame.pucValue);
         sFrame.pucValue = NULL;
     }
