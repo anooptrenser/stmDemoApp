@@ -43,8 +43,6 @@ static void UartFrameHandlePayload(uint8 ucByte);
 static void UartFrameHandleChecksum(uint8 ucByte);
 static void UartFrameHandleStop(uint8 ucByte);
 static void UartFrameProcessFull(void);
-static bool UartFrameIsStartByte(uint8 ucByte);
-static bool UartFrameIsStopByte(uint8 ucByte);
 static void UartFrameResetState(void);
 static void UartFrameProcessReceived(DATA_FRAME *psFrame);
 static void UartFrameHandleInit(const DATA_FRAME *psFrame);
@@ -104,12 +102,15 @@ void UartFrameReceiverLoop(void)
             }
 
             default:
+            {
                 UartFrameResetState();
                 break;
+            }
         }
 
         // Defensive: buffer overflow resets state (corrupt/invalid frame recovery)
-        if (sunFrameIndex >= MAX_RAW_FRAME_LEN) {
+        if (sunFrameIndex >= MAX_RAW_FRAME_LEN)
+        {
             printf("[UartFrameReceiver] Buffer overflow, resetting\n");
             UartFrameResetState();
         }
@@ -124,7 +125,7 @@ void UartFrameReceiverLoop(void)
 //*****************************************************************************
 static void UartFrameHandleWaitStart(uint8 ucByte)
 {
-    if (UartFrameIsStartByte(ucByte))
+    if (UART_START_BYTE == ucByte)
     {
         sucFrameBuffer[0] = ucByte;
         sunFrameIndex = 1;
@@ -145,15 +146,19 @@ static void UartFrameHandleHeader(uint8 ucByte)
     uint8* pucHeader = NULL;
     
     sucFrameBuffer[sunFrameIndex++] = ucByte;
+
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1))
     {
         pucHeader = &sucFrameBuffer[1];
         ParseHeader(pucHeader, &sParsedFrame);  // Parse once and store
         sulPayloadLen = sParsedFrame.ulLength;
-        if (sulPayloadLen > MAX_FRAME_SIZE) {
+
+        if (sulPayloadLen > MAX_FRAME_SIZE) 
+        {
             printf("[UartFrameReceiver] Payload too large, discarding.\n");
             UartFrameResetState();
-        } else {
+        } else 
+        {
             seRxState = (sulPayloadLen > 0U) ?
                 UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
         }
@@ -169,7 +174,9 @@ static void UartFrameHandleHeader(uint8 ucByte)
 static void UartFrameHandlePayload(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
-    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1U + sulPayloadLen)) {
+
+    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1U + sulPayloadLen)) 
+    {
         seRxState = UART_FRAME_RX_CHECKSUM;
     }
 }
@@ -195,36 +202,17 @@ static void UartFrameHandleChecksum(uint8 ucByte)
 static void UartFrameHandleStop(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
-    if (UartFrameIsStopByte(ucByte)) {
+
+    if (UART_STOP_BYTE == ucByte)
+    {
         UartFrameProcessFull();
-    } else {
+
+    } else
+    {
         printf("[UartFrameReceiver] Bad STOP byte! Got 0x%02X\n", ucByte);
     }
+
     UartFrameResetState();
-}
-
-//**************************.Utility/Validation Functions.*********************
-
-//******************************.FUNCTION_HEADER.******************************
-// Purpose  : Check if received byte is the expected start byte
-// Inputs   : ucByte    - Byte to validate
-// Outputs  : None
-// Returns  : bool      - true if byte matches start byte, false otherwise
-//*****************************************************************************
-static bool UartFrameIsStartByte(uint8 ucByte)
-{
-    return (ucByte == UART_START_BYTE);
-}
-
-//******************************.FUNCTION_HEADER.******************************
-// Purpose  : Check if received byte is the expected stop byte
-// Inputs   : ucByte    - Byte to validate
-// Outputs  : None
-// Returns  : bool      - true if byte matches stop byte, false otherwise
-//*****************************************************************************
-static bool UartFrameIsStopByte(uint8 ucByte)
-{
-    return (ucByte == UART_STOP_BYTE);
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -259,7 +247,6 @@ static void UartFrameProcessFull(void)
     printf("[UartFrameReceiver] Raw frame data:\n\r");
     HexDump(sucFrameBuffer, sunFrameIndex);
 
-    // Copy already parsed header data - no need to call ParseHeader again!
     sFrame = sParsedFrame;
     pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
     ucChecksum = sucFrameBuffer[sunFrameIndex - 2];
@@ -269,7 +256,7 @@ static void UartFrameProcessFull(void)
     sFrame.ucStopByte  = ucStop;
     sFrame.ucChecksum  = ucChecksum;
 
-    ulExpectedLen = 1U + FRAME_HEADER_SIZE + sFrame.ulLength + 1U + 1U;
+    ulExpectedLen = 1 + FRAME_HEADER_SIZE + sFrame.ulLength + 1 + 1;
 
     if (ulExpectedLen == sunFrameIndex &&
         ParseValidateChecksum(pucPayload, sFrame.ulLength, ucChecksum) &&
@@ -300,6 +287,7 @@ static void UartFrameProcessReceived(DATA_FRAME *psFrame)
     switch(psFrame->ucCmd)
     {
         case CMD_INIT:
+        {
             if (psFrame->ucType == TYPE_FILE_LENGTH)
             {
                 UartFrameHandleInit(psFrame);
@@ -309,9 +297,12 @@ static void UartFrameProcessReceived(DATA_FRAME *psFrame)
                 printf("[UartFrameReceiver] CMD_INIT received, unknown type: 0x%02X\n\r", 
                         psFrame->ucType);
             }
+
             break;
+        }
             
         case CMD_TRANSFER:
+        {
             if (psFrame->ucType == TYPE_DATA)
             {
                 UartFrameHandleTransfer(psFrame);
@@ -325,12 +316,16 @@ static void UartFrameProcessReceived(DATA_FRAME *psFrame)
                 printf("[UartFrameReceiver] CMD_TRANSFER unknown type: 0x%02X\n\r", 
                         psFrame->ucType);
             }
+
             break;
+        }
             
         default:
+        {
             printf("[UartFrameReceiver] Unknown command. Cmd=0x%02X, Type=0x%02X\n\r",
                     psFrame->ucCmd, psFrame->ucType);
             break;
+        }
     }
 }
 
@@ -432,21 +427,5 @@ static void UartFrameHandleFileTransferComplete(void)
                 sulExpectedFileSize, sulReceivedBytes);
     }
       
-    // Send final ACK to confirm completion received
-    stFinalAck.ucCmd = CMD_TRANSFER;
-    stFinalAck.ucType = TYPE_ACK;
-    stFinalAck.ulLength = 0;
-    stFinalAck.unSeqNum = 0; // Completion ACK
-    stFinalAck.pucValue = NULL;
-    stFinalAck.ucChecksum = 0;
-
-    if (!UartProtoSendFrame(&stFinalAck))
-    {
-        printf("[UartFrameReceiver] Error: SendDataFrame failed for final ACK\n");
-    }
-    else
-    {
-        printf("[UartFrameReceiver] Final ACK sent to confirm transfer completion\n");
-    }
 }
 // EOF

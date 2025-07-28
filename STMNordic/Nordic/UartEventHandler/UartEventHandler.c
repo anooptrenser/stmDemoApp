@@ -24,6 +24,13 @@
 #include <ctype.h>
 #include "UartFrameHandler.h"
 
+//******************************* Local Types *********************************
+
+//***************************** Local Constants *******************************
+
+//***************************** Local Variables *******************************
+
+//****************************** Local Functions ******************************
 
 //******************************.UartInit.*************************************
 // Purpose  : Initializes the UART peripheral for BLE-UART bridge communication.
