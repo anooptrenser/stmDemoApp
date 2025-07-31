@@ -227,7 +227,7 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
     uint8 ucChunkBuf[MAX_FRAME_SIZE] = {0};
     uint32 ulChunkLen = 0;
 
-    if ((pucData != NULL) && (ulLen > 0U) && (ulMaxChunk > 0U))
+    if ((pucData != NULL) && (ulLen > 0) && (ulMaxChunk > 0))
     {
         while (ulOffset < ulLen)
         {
@@ -284,10 +284,10 @@ static bool FileTransferComplete(void)
 
     stComplete.ucCmd = CMD_TRANSFER;
     stComplete.ucType = TYPE_COMPLETE;
-    stComplete.ulLength = 0U;  // No payload needed
+    stComplete.ulLength = 0;  // No payload needed
     stComplete.unSeqNum = SEQ_COMPLETE;
     stComplete.pucValue = NULL;
-    stComplete.ucChecksum = UartProtoCalcChecksum(NULL, 0U);
+    stComplete.ucChecksum = UartProtoCalcChecksum(NULL, 0);
 
     blSendResult = UartProtoSendFrame(&stComplete);
     

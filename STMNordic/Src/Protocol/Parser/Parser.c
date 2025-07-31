@@ -90,6 +90,7 @@ bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload)
     {
         // Allocate memory for payload
         pFrame->pucValue = malloc(pFrame->ulLength);
+        
         if (pFrame->pucValue == NULL)
         {
             printf("[ERROR] Memory allocation failed\n\r");

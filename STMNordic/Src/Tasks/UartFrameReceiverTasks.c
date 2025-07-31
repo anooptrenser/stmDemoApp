@@ -235,10 +235,7 @@ static void UartFrameHandleStop(uint8 ucByte)
         printf("[UartFrameReceiver] Bad STOP byte! Got 0x%02X\n", ucByte);
     }
     
-    seRxState = UART_FRAME_RX_WAIT_START;
-    sunFrameIndex = 0;
-    sulPayloadLen = 0;
-    memset(&sPartialFrame, 0, sizeof(sPartialFrame));  // Clear partial frame
+    UartFrameResetState(); // Clear partial frame
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -259,7 +256,7 @@ static void UartFrameProcessFull(void)
     sFrame.ucChecksum  = ucChecksum;
 
     uint32 ulExpectedLen =
-        1U + FRAME_HEADER_SIZE + sFrame.ulLength + 1U + 1U;
+        1 + FRAME_HEADER_SIZE + sFrame.ulLength + 1 + 1;
 
     if (ulExpectedLen == sunFrameIndex &&
         ParseValidateChecksum(pucPayload, sFrame.ulLength, ucChecksum) &&
