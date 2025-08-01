@@ -5,7 +5,7 @@
 //
 // File    : UartDriver.h
 // Summary : UART abstraction header for Nordic app_uart backend
-// Author  : <Your Name>
+// Author  : Anoop G
 // Date    : 17-07-2025
 //
 //*****************************************************************************

@@ -44,7 +44,7 @@ bool UartSend(const uint8* pucData, uint32 ulLen)
         {
             while (app_uart_put(pucData[ulIndex]) != NRF_SUCCESS)
             {
-                /* Retry until transmitter is ready */
+               
             }
         }
 

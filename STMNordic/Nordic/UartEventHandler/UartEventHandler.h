@@ -22,7 +22,6 @@
 #define UART_RTS_PIN_NUMBER   5
 #define UART_CTS_PIN_NUMBER   7
 #define UART_BAUDRATE         UART_BAUDRATE_BAUDRATE_Baud115200
-#define UART_RX_BUFFER_SIZE   256
 
 //**************************** Forward Declarations ***************************
 bool UartInit(void);

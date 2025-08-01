@@ -5,7 +5,7 @@
 //*****************************************************************************
 //
 // File     : UartEventHandler.c
-// Summary  : UART RX buffer, event handlers, and frame extraction for nRF52
+// Summary  : UART RX buffer, event handlers, and frame extraction 
 // Author   : Anoop
 // Date     : 20-07-2025
 //*****************************************************************************

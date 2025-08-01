@@ -4,7 +4,7 @@
 //*****************************************************************************
 //
 // File     : UartFrameReceiver.c
-// Summary  : UART frame extraction (state machine, Nordic compliant)
+// Summary  : UART frame extraction 
 // Author   : Anoop G 
 // Date     : 27-07-2025
 //
@@ -159,7 +159,7 @@ static void UartFrameHandleHeader(uint8 ucByte)
             UartFrameResetState();
         } else 
         {
-            seRxState = (sulPayloadLen > 0U) ?
+            seRxState = (sulPayloadLen > 0) ?
                 UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
         }
     }
@@ -239,9 +239,9 @@ static void UartFrameProcessFull(void)
 {
     DATA_FRAME sFrame = {0};
     uint8* pucPayload = NULL;
-    uint8  ucChecksum = 0U;
-    uint8  ucStop = 0U;
-    uint32 ulExpectedLen = 0U;
+    uint8  ucChecksum = 0;
+    uint8  ucStop = 0;
+    uint32 ulExpectedLen = 0;
     
     // Display received frame data using HexDump for debugging
     printf("[UartFrameReceiver] Raw frame data:\n\r");
@@ -270,7 +270,8 @@ static void UartFrameProcessFull(void)
         printf("[UartFrameReceiver] Frame validation failed/discarded.\n");
     }
 
-    if (sFrame.pucValue != NULL) {
+    if (sFrame.pucValue != NULL) 
+    {
         free(sFrame.pucValue);
         sFrame.pucValue = NULL;
     }
