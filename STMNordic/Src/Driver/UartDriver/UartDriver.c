@@ -23,12 +23,9 @@
 #include "OSQueue.h"
 
 //***************************** Global Variables ******************************
-// RTOS queue handle for frames
-void *gFrameQueueHandle = NULL;
-// UART RX single-byte buffer initialized
-uint8 ucData = 0U;
-// UART RX circular buffer initialized
-UART_RX_BUFFER gUartRxBuffer = {0};
+void *gFrameQueueHandle = NULL;       // RTOS queue handle for frames
+uint8 ucData = 0;                    // UART RX single-byte buffer initialized
+UART_RX_BUFFER gUartRxBuffer = {0};   // UART RX circular buffer initialized
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose : Initialize UART frame queue for inter-task communication
@@ -36,7 +33,7 @@ UART_RX_BUFFER gUartRxBuffer = {0};
 // Outputs : None
 // Return  : bool - true if queue created successfully, false otherwise
 // Notes   :
-//**********************************************************************************
+//*****************************************************************************
 bool UartFrameQueueInit(void)
 {
     bool blResult = true;

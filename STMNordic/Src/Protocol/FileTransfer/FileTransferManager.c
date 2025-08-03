@@ -50,7 +50,7 @@ static bool FileTransferAckWait(uint16 unExpectedSeqNum, uint32 ulTimeoutMs)
         if ((stAck.ucCmd == CMD_TRANSFER) &&
             (stAck.ucType == TYPE_ACK) &&
             (stAck.unSeqNum == unExpectedSeqNum) &&
-            (stAck.ulLength == 0U))
+            (stAck.ulLength == 0))
         {
             blStatus = true;
         }
@@ -122,39 +122,42 @@ static bool FileTransferAckWaitWithRetry(const uint16 unSeqNum)
 //*****************************************************************************
 bool FileTransferManager(const uint8* pucData, uint32 ulFileLen)
 {
-	uint32 ulMaxChunk = 0U;
+    uint32 ulMaxChunk = 0;
     bool blStatus = false;
 
-    blStatus = InitFileTransfer(ulFileLen, &ulMaxChunk);
+    if (pucData != NULL && ulFileLen > 0)  
+    {
+        blStatus = InitFileTransfer(ulFileLen, &ulMaxChunk);
 
-    if (blStatus != true)
-    {
-        printf("Error: InitFileTransfer failed\r\n");
-    }
-    else
-    {
-        blStatus = FileTransfer(pucData, ulFileLen, ulMaxChunk);
-        
-        if (blStatus != true)
+        if (!blStatus)
         {
-            printf("Error: FileTransfer failed\r\n");
+            printf("Error: InitFileTransfer failed\r\n");
         }
         else
         {
-            // Send transfer complete notification
-            if (FileTransferComplete())
+            blStatus = FileTransfer(pucData, ulFileLen, ulMaxChunk);
+
+            if (!blStatus)
             {
-                printf("File transfer completed successfully\r\n");
+                printf("Error: FileTransfer failed\r\n");
             }
             else
             {
-                printf("Warning: Transfer complete notification failed\r\n");             
+                if (FileTransferComplete())
+                {
+                    printf("File transfer completed successfully\r\n");
+                }
+                else
+                {
+                    printf("Warning: Transfer complete notification failed\r\n");
+                }
             }
         }
     }
 
     return blStatus;
 }
+
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose  : Send file length and get max chunk size from receiver.
@@ -197,7 +200,7 @@ static bool InitFileTransfer(uint32 ulFileLen, uint32 *pulMaxChunk)
             {
                 memcpy(pulMaxChunk, stResp.pucValue, FILE_LEN_BYTES);
             }
-            // Free buffer here regardless
+          
             if (stResp.pucValue != NULL)
             {
                 free(stResp.pucValue);
@@ -254,7 +257,6 @@ static bool FileTransfer(const uint8* pucData, const uint32 ulLen, const uint32 
             ulOffset += ulChunkLen;
             unSeqNum++;
 
-            // Handle sequence number rollover (1 to 0xFFFF, skip 0)
             if (unSeqNum == 0) 
             {
                 unSeqNum = 1;
@@ -284,8 +286,8 @@ static bool FileTransferComplete(void)
 
     stComplete.ucCmd = CMD_TRANSFER;
     stComplete.ucType = TYPE_COMPLETE;
-    stComplete.ulLength = 0;  // No payload needed
-    stComplete.unSeqNum = SEQ_COMPLETE;
+    stComplete.ulLength = 0;  
+    stComplete.unSeqNum = SEQ_INIT;
     stComplete.pucValue = NULL;
     stComplete.ucChecksum = UartProtoCalcChecksum(NULL, 0);
 

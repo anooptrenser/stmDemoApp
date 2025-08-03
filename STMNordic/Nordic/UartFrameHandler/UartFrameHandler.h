@@ -2,6 +2,13 @@
 // Copyright (c) 2025 Trenser Technology Solutions
 // All Rights Reserved
 //*****************************************************************************
+//
+// File     : UartFrameHandler.h
+// Summary  : UART frame extraction 
+// Author   : Anoop G 
+// Date     : 27-07-2025
+//
+//*****************************************************************************
 
 #ifndef UART_FRAME_RECEIVER_H
 #define UART_FRAME_RECEIVER_H

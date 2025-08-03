@@ -32,15 +32,15 @@
 bool UartSend(const uint8* pucData, uint32 ulLen)
 {
     bool blSuccess = false;
-    uint32 ulIndex = 0U;
+    uint32 ulIndex = 0;
 
-    if ((pucData == NULL) || (ulLen == 0U))
+    if ((pucData == NULL) || (ulLen == 0))
     {
         blSuccess = false;
     }
     else
     {
-        for (ulIndex = 0U; ulIndex < ulLen; ++ulIndex)
+        for (ulIndex = 0; ulIndex < ulLen; ++ulIndex)
         {
             while (app_uart_put(pucData[ulIndex]) != NRF_SUCCESS)
             {

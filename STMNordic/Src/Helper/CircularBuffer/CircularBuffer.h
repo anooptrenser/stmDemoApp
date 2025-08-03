@@ -18,7 +18,7 @@
 #include "common.h"
 
 //***************************** Global Constants ******************************
-#define UART_RX_BUF_SIZE     512U
+#define UART_RX_BUF_SIZE     512
 
 //******************************* Global Types ********************************
 typedef struct

@@ -25,8 +25,8 @@ bool UartRxBufferInit(UART_RX_BUFFER* pRxBuffer)
 
     if (pRxBuffer != NULL)
     {
-        pRxBuffer->unHead = 0U;
-        pRxBuffer->unTail = 0U;
+        pRxBuffer->unHead = 0;
+        pRxBuffer->unTail = 0;
         blResult = true;
     }
     
@@ -44,9 +44,10 @@ bool UartRxBufferInit(UART_RX_BUFFER* pRxBuffer)
 bool UartRxBufferPush(UART_RX_BUFFER* pRxBuffer, uint8 ucData)
 {
     bool blResult = false;
+
     if (pRxBuffer != NULL)
     {
-        uint16 unNext = (pRxBuffer->unHead + 1U) % UART_RX_BUF_SIZE;
+        uint16 unNext = (pRxBuffer->unHead + 1) % UART_RX_BUF_SIZE;
 
         if (unNext != pRxBuffer->unTail)
         {
@@ -75,7 +76,7 @@ bool UartRxBufferPop(UART_RX_BUFFER* pRxBuffer, uint8* pucData)
         if (pRxBuffer->unHead != pRxBuffer->unTail)
         {
             *pucData = pRxBuffer->pucBuffer[pRxBuffer->unTail];
-            pRxBuffer->unTail = (pRxBuffer->unTail + 1U) % UART_RX_BUF_SIZE;
+            pRxBuffer->unTail = (pRxBuffer->unTail + 1) % UART_RX_BUF_SIZE;
             blResult = true;
         }
     }
@@ -92,7 +93,7 @@ bool UartRxBufferPop(UART_RX_BUFFER* pRxBuffer, uint8* pucData)
 //**********************************************************************************
 uint16 UartRxBufferCount(UART_RX_BUFFER* pRxBuffer)
 {
-    uint16 unCount = 0U;
+    uint16 unCount = 0;
 
     if (pRxBuffer != NULL)
     {

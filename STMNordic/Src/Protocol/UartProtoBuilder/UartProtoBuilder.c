@@ -33,12 +33,12 @@
 //*****************************************************************************
 uint8 UartProtoCalcChecksum(const uint8* pucData, uint32 ulLen)
 {
-    uint8 ucSum = 0U;
-    uint32 ulIdx = 0U;
+    uint8 ucSum = 0;
+    uint32 ulIdx = 0;
 
     if (pucData != NULL)
     {
-        for (ulIdx = 0U; ulIdx < ulLen; ++ulIdx)
+        for (ulIdx = 0; ulIdx < ulLen; ++ulIdx)
         {
             ucSum += pucData[ulIdx];
         }
@@ -57,11 +57,11 @@ uint8 UartProtoCalcChecksum(const uint8* pucData, uint32 ulLen)
 //*****************************************************************************
 uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ulMaxBufSize)
 {
-    uint32 ulTotalLen = 0U;
+    uint32 ulTotalLen = 0;
 
     if ((psFrame != NULL) && (ucBuffer != NULL))
     {
-    	ulTotalLen = FRAME_HEADER_SIZE + psFrame->ulLength + 1U;
+    	ulTotalLen = FRAME_HEADER_SIZE + psFrame->ulLength + 1;
 
         if (ulTotalLen <= ulMaxBufSize)
         {
@@ -70,7 +70,7 @@ uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ul
             memcpy(&ucBuffer[2], &psFrame->ulLength, 4U);
             memcpy(&ucBuffer[6], &psFrame->unSeqNum, 2U);
 
-            if ((psFrame->ulLength > 0U) && (psFrame->pucValue != NULL))
+            if ((psFrame->ulLength > 0) && (psFrame->pucValue != NULL))
             {
                 memcpy(&ucBuffer[FRAME_HEADER_SIZE], psFrame->pucValue, psFrame->ulLength);
             }
@@ -79,7 +79,7 @@ uint32 UartProtoBuildFrame(const DATA_FRAME* psFrame, uint8* ucBuffer, uint32 ul
         }
         else
         {
-        	ulTotalLen = 0U;
+        	ulTotalLen = 0;
         }
     }
 
@@ -97,15 +97,15 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
     bool blStatus = false;
     uint8 ucFrameBuf[MAX_FRAME_SIZE + FRAME_HEADER_SIZE + 1] = {0}; // Frame only
     uint8 ucRawBuf[MAX_RAW_FRAME_LEN] = {0};                   
-    uint32 ulFrameLen = 0U;
-    uint32 ulTotalLen = 0U;
+    uint32 ulFrameLen = 0;
+    uint32 ulTotalLen = 0;
 
     if (psFrame != NULL)
     {
         // Build the unframed raw payload
         ulFrameLen = UartProtoBuildFrame(psFrame, ucFrameBuf, sizeof(ucFrameBuf));
 
-        if (ulFrameLen != 0U)
+        if (ulFrameLen != 0)
         {
             // Wrap the frame with start/stop bytes
             ulTotalLen = ulFrameLen + 2U;

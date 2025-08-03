@@ -5,7 +5,7 @@
 //
 // File     : UartFrameReceiverTasks.c
 // Summary  : UART frame extraction RTOS thread (state machine, style-compliant)
-// Author   : Anoop G 
+// Author   : Anoop G
 // Date     : 27-07-2025
 //
 //*****************************************************************************
@@ -23,11 +23,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-//******************************* Local Types ********************************* 
+//******************************* Local Types *********************************
 
-//***************************** Local Constants ******************************* 
+//***************************** Local Constants *******************************
 
-//***************************** Local Variables ******************************* 
+//***************************** Local Variables *******************************
 
 //****************************** Local Functions ******************************
 
@@ -35,7 +35,7 @@
 static uint8 sucFrameBuffer[MAX_RAW_FRAME_LEN] = {0};
 static uint16 sunFrameIndex = 0;
 static uint32 sulPayloadLen = 0;
-static DATA_FRAME sPartialFrame = {0};  // Store parsed header to avoid redundant parsing
+static DATA_FRAME sParsedFrame = {0};
 static UART_FRAME_RX_STATE seRxState = UART_FRAME_RX_WAIT_START;
 
 //************************ Static Function Prototypes *************************
@@ -62,7 +62,7 @@ static void UartFrameResetState(void);
 void UartFrameReceiverTask(void *pvArgs)
 {
     (void)pvArgs;
-    uint8 ucReceivedByte = 0U;
+    uint8 ucReceivedByte = 0;
 
     while (1)
     {
@@ -102,7 +102,7 @@ void UartFrameReceiverTask(void *pvArgs)
                 UartFrameHandleStop(ucReceivedByte);
                 break;
             }
-            
+
             default:
             {
             	UartFrameResetState();
@@ -111,7 +111,7 @@ void UartFrameReceiverTask(void *pvArgs)
         }
 
         // Defensive overflow/reset
-        if (sunFrameIndex >= MAX_RAW_FRAME_LEN) 
+        if (sunFrameIndex >= MAX_RAW_FRAME_LEN)
         {
             printf("[UartFrameReceiver] Buffer overflow, resetting.\n");
             UartFrameResetState();
@@ -148,7 +148,7 @@ static void UartFrameResetState(void)
     seRxState = UART_FRAME_RX_WAIT_START;
     sunFrameIndex = 0;
     sulPayloadLen = 0;
-    memset(&sPartialFrame, 0, sizeof(sPartialFrame));
+    memset(&sParsedFrame, 0, sizeof(sParsedFrame));
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -166,19 +166,16 @@ static void UartFrameHandleHeader(uint8 ucByte)
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1))
     {
         uint8* pucHeader = &sucFrameBuffer[1];
-        ParseHeader(pucHeader, &sPartialFrame);  // Parse once and store
-        sulPayloadLen = sPartialFrame.ulLength;
+        ParseHeader(pucHeader, &sParsedFrame);  // Parse once and store
+        sulPayloadLen = sParsedFrame.ulLength;
 
-        if (sulPayloadLen > MAX_FRAME_SIZE) 
+        if (sulPayloadLen > MAX_FRAME_SIZE)
         {
             printf("[UartFrameReceiver] Payload too large, discarding.\n");
-            seRxState = UART_FRAME_RX_WAIT_START;
-            sunFrameIndex = 0;
-            sulPayloadLen = 0;
-            memset(&sPartialFrame, 0, sizeof(sPartialFrame));  // Clear partial frame
-        } else 
+            UartFrameResetState();
+        } else
         {
-            seRxState = (sulPayloadLen > 0U) ?
+            seRxState = (sulPayloadLen > 0) ?
                         UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
         }
     }
@@ -189,14 +186,14 @@ static void UartFrameHandleHeader(uint8 ucByte)
 // Inputs  : ucByte - Received byte from UART circular buffer
 // Outputs : None
 // Return  : None
-// Notes   : Accumulates payload bytes until expected length is reached, then 
+// Notes   : Accumulates payload bytes until expected length is reached, then
 //           transitions to checksum state
 //******************************************************************************
 static void UartFrameHandlePayload(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
 
-    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1U + sulPayloadLen)) 
+    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1 + sulPayloadLen))
     {
         seRxState = UART_FRAME_RX_CHECKSUM;
     }
@@ -234,8 +231,8 @@ static void UartFrameHandleStop(uint8 ucByte)
     {
         printf("[UartFrameReceiver] Bad STOP byte! Got 0x%02X\n", ucByte);
     }
-    
-    UartFrameResetState(); // Clear partial frame
+
+    UartFrameResetState();
 }
 
 //******************************.FUNCTION_HEADER.******************************
@@ -247,16 +244,20 @@ static void UartFrameHandleStop(uint8 ucByte)
 //******************************************************************************
 static void UartFrameProcessFull(void)
 {
-    DATA_FRAME sFrame = sPartialFrame;
-    uint8* pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
-    uint8  ucChecksum = sucFrameBuffer[sunFrameIndex - 2];
-    uint8  ucStop = sucFrameBuffer[sunFrameIndex - 1];
-    sFrame.ucStartByte = UART_START_BYTE;
-    sFrame.ucStopByte  = ucStop;
-    sFrame.ucChecksum  = ucChecksum;
+    DATA_FRAME sFrame = {0};
+    uint8* pucPayload = NULL;
+    uint8  ucChecksum = 0;
+    uint8  ucStop     = 0;
+    uint32 ulExpectedLen = 0;
 
-    uint32 ulExpectedLen =
-        1 + FRAME_HEADER_SIZE + sFrame.ulLength + 1 + 1;
+    sFrame = sParsedFrame;
+    pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
+    ucChecksum = sucFrameBuffer[sunFrameIndex - 2];
+    ucStop = sucFrameBuffer[sunFrameIndex - 1];
+    sFrame.ucStartByte = UART_START_BYTE;
+    sFrame.ucStopByte = ucStop;
+    sFrame.ucChecksum = ucChecksum;
+    ulExpectedLen = 1 + FRAME_HEADER_SIZE + sFrame.ulLength + 1 + 1;
 
     if (ulExpectedLen == sunFrameIndex &&
         ParseValidateChecksum(pucPayload, sFrame.ulLength, ucChecksum) &&
@@ -270,12 +271,11 @@ static void UartFrameProcessFull(void)
         printf("[UartFrameReceiver] Frame validation failed/discarded.\n");
     }
 
-    if (sFrame.pucValue != NULL) 
+    if (sFrame.pucValue != NULL)
     {
         free(sFrame.pucValue);
         sFrame.pucValue = NULL;
     }
-
 }
 
 //******************************.FUNCTION_HEADER.******************************

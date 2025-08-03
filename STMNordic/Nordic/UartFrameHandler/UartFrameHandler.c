@@ -3,7 +3,7 @@
 // All Rights Reserved
 //*****************************************************************************
 //
-// File     : UartFrameReceiver.c
+// File     : UartFrameHandler.c
 // Summary  : UART frame extraction 
 // Author   : Anoop G 
 // Date     : 27-07-2025
@@ -63,41 +63,41 @@ static void UartFrameHandleFileTransferComplete(void);
 //*****************************************************************************
 void UartFrameReceiverLoop(void)
 {
-    uint8 ucByte = 0U;
+    uint8 ucReceivedByte = 0;
     
-    while (UartRxBufferCount(&gUartRxBuffer) > 0U)
+    while (UartRxBufferCount(&gUartRxBuffer) > 0)
     {
-        UartRxBufferPop(&gUartRxBuffer, &ucByte);
+        UartRxBufferPop(&gUartRxBuffer, &ucReceivedByte);
 
         switch (seRxState)
         {
             case UART_FRAME_RX_WAIT_START:
             {
-                UartFrameHandleWaitStart(ucByte);
+                UartFrameHandleWaitStart(ucReceivedByte);
                 break;
             }
 
             case UART_FRAME_RX_HEADER:
             {
-                UartFrameHandleHeader(ucByte);
+                UartFrameHandleHeader(ucReceivedByte);
                 break;
             }
 
             case UART_FRAME_RX_PAYLOAD:
             {
-                UartFrameHandlePayload(ucByte);
+                UartFrameHandlePayload(ucReceivedByte);
                 break;
             }
 
             case UART_FRAME_RX_CHECKSUM:
             {
-                UartFrameHandleChecksum(ucByte);
+                UartFrameHandleChecksum(ucReceivedByte);
                 break;
             }
 
             case UART_FRAME_RX_STOP:
             {
-                UartFrameHandleStop(ucByte);
+                UartFrameHandleStop(ucReceivedByte);
                 break;
             }
 
@@ -130,7 +130,6 @@ static void UartFrameHandleWaitStart(uint8 ucByte)
         sucFrameBuffer[0] = ucByte;
         sunFrameIndex = 1;
         sulPayloadLen = 0;
-        memset(&sParsedFrame, 0, sizeof(sParsedFrame));  // Clear partial frame
         seRxState = UART_FRAME_RX_HEADER;
     }
 }
@@ -160,7 +159,7 @@ static void UartFrameHandleHeader(uint8 ucByte)
         } else 
         {
             seRxState = (sulPayloadLen > 0) ?
-                UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
+                        UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
         }
     }
 }
@@ -175,7 +174,7 @@ static void UartFrameHandlePayload(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
 
-    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1U + sulPayloadLen)) 
+    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1 + sulPayloadLen)) 
     {
         seRxState = UART_FRAME_RX_CHECKSUM;
     }
@@ -251,7 +250,6 @@ static void UartFrameProcessFull(void)
     pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
     ucChecksum = sucFrameBuffer[sunFrameIndex - 2];
     ucStop = sucFrameBuffer[sunFrameIndex - 1];
-
     sFrame.ucStartByte = UART_START_BYTE;
     sFrame.ucStopByte  = ucStop;
     sFrame.ucChecksum  = ucChecksum;

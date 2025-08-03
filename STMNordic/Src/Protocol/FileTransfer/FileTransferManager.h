@@ -24,7 +24,6 @@
 #define DATA_SENDER_TIMEOUT_MS  5000
 #define FILE_LEN_BYTES          4
 #define SEQ_INIT                0
-#define SEQ_COMPLETE            0
 #define MAX_ACK_RETRIES         3
 
 //************************** Function Declarations ****************************

@@ -75,7 +75,6 @@ bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload)
 {
     bool blResult = false;
     
-    // Null pointer checks
     if ((pFrame == NULL) || (pucPayload == NULL && pFrame->ulLength > 0))
     {
         printf("[ERROR] Invalid parameters in ParsePayload\n\r");
@@ -88,7 +87,6 @@ bool ParsePayload(DATA_FRAME* pFrame, const uint8* pucPayload)
     }
     else
     {
-        // Allocate memory for payload
         pFrame->pucValue = malloc(pFrame->ulLength);
         
         if (pFrame->pucValue == NULL)

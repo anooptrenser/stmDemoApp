@@ -152,7 +152,7 @@ const uint8 g_ucData[] = "{"
 		"}";
 
 
-const uint32 g_ulDataLen = sizeof(g_ucData) - 1U;
+const uint32 g_ulDataLen = sizeof(g_ucData) - 1;
 
 //******************************.FUNCTION_HEADER.******************************
 // Purpose : Print a formatted hexadecimal and ASCII dump of binary data
@@ -165,17 +165,17 @@ const uint32 g_ulDataLen = sizeof(g_ucData) - 1U;
 void HexDump(const void *pvData, uint32 ulSize)
 {
 	const uint8 *pucByte = (const uint8 *)pvData;
-	uint32 ulLineOffset = 0U;
-	uint32 ulByteIdx = 0U;
+	uint32 ulLineOffset = 0;
+	uint32 ulByteIdx = 0;
 	char cChar = 0;
 
-    for (ulLineOffset = 0U; ulLineOffset < ulSize; ulLineOffset += HEXDUMP_BYTES_PER_LINE)
+    for (ulLineOffset = 0; ulLineOffset < ulSize; ulLineOffset += HEXDUMP_BYTES_PER_LINE)
     {
         /* Print offset */
         printf("%08lx  ", (unsigned long)ulLineOffset);
 
         /* Print hex byte values */
-        for (ulByteIdx = 0U; ulByteIdx < HEXDUMP_BYTES_PER_LINE; ulByteIdx++)
+        for (ulByteIdx = 0; ulByteIdx < HEXDUMP_BYTES_PER_LINE; ulByteIdx++)
         {
             if ((ulLineOffset + ulByteIdx) < ulSize)
             {
@@ -194,7 +194,7 @@ void HexDump(const void *pvData, uint32 ulSize)
 
         /* Print ASCII characters */
         printf(" |");
-        for (ulByteIdx = 0U; ulByteIdx < HEXDUMP_BYTES_PER_LINE; ulByteIdx++)
+        for (ulByteIdx = 0; ulByteIdx < HEXDUMP_BYTES_PER_LINE; ulByteIdx++)
         {
             if ((ulLineOffset + ulByteIdx) < ulSize)
             {

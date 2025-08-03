@@ -16,6 +16,8 @@
 #include "common.h"
 #include <stdbool.h>
 
+//***************************** Global Variables ****************************** 
+
 //*************************** Global Constants ********************************
 #define MAX_FRAME_SIZE  256
 #define UART_START_BYTE 0xFF
@@ -37,7 +39,7 @@ typedef enum {
     TYPE_COMPLETE    = 0x05
 } TYPE_TYPE;
 
-//************************** Data Structures **********************************
+//******************************* Global Types ******************************** 
 typedef struct
 {
     uint8 ucStartByte;     
