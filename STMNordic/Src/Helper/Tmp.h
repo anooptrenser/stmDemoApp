@@ -22,7 +22,8 @@ extern const uint32 g_ulDataLen;
 //******************************* Global Types ********************************
 
 //***************************** Global Constants ******************************
-#define HEXDUMP_BYTES_PER_LINE   (16U)
+#define HEXDUMP_BYTES_PER_LINE   (16)
+#define ENABLE_HEXDUMP           1
 
 //***************************** Global Variables ******************************
 

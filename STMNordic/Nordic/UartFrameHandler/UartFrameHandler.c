@@ -4,8 +4,8 @@
 //*****************************************************************************
 //
 // File     : UartFrameHandler.c
-// Summary  : UART frame extraction 
-// Author   : Anoop G 
+// Summary  : UART frame extraction
+// Author   : Anoop G
 // Date     : 27-07-2025
 //
 //*****************************************************************************
@@ -22,11 +22,11 @@
 #include "AppMain.h"
 #include "Tmp.h"
 
-//******************************* Local Types ********************************* 
+//******************************* Local Types *********************************
 
-//***************************** Local Constants ******************************* 
+//***************************** Local Constants *******************************
 
-//***************************** Local Variables ******************************* 
+//***************************** Local Variables *******************************
 static uint8  sucFrameBuffer[MAX_RAW_FRAME_LEN] = {0};
 static uint16 sunFrameIndex = 0;
 static uint32 sulPayloadLen = 0;
@@ -64,7 +64,7 @@ static void UartFrameHandleFileTransferComplete(void);
 void UartFrameReceiverLoop(void)
 {
     uint8 ucReceivedByte = 0;
-    
+
     while (UartRxBufferCount(&gUartRxBuffer) > 0)
     {
         UartRxBufferPop(&gUartRxBuffer, &ucReceivedByte);
@@ -143,7 +143,7 @@ static void UartFrameHandleWaitStart(uint8 ucByte)
 static void UartFrameHandleHeader(uint8 ucByte)
 {
     uint8* pucHeader = NULL;
-    
+
     sucFrameBuffer[sunFrameIndex++] = ucByte;
 
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1))
@@ -152,11 +152,11 @@ static void UartFrameHandleHeader(uint8 ucByte)
         ParseHeader(pucHeader, &sParsedFrame);  // Parse once and store
         sulPayloadLen = sParsedFrame.ulLength;
 
-        if (sulPayloadLen > MAX_FRAME_SIZE) 
+        if (sulPayloadLen > MAX_FRAME_SIZE)
         {
             printf("[UartFrameReceiver] Payload too large, discarding.\n");
             UartFrameResetState();
-        } else 
+        } else
         {
             seRxState = (sulPayloadLen > 0) ?
                         UART_FRAME_RX_PAYLOAD : UART_FRAME_RX_CHECKSUM;
@@ -174,7 +174,7 @@ static void UartFrameHandlePayload(uint8 ucByte)
 {
     sucFrameBuffer[sunFrameIndex++] = ucByte;
 
-    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1 + sulPayloadLen)) 
+    if (sunFrameIndex == (FRAME_HEADER_SIZE + 1 + sulPayloadLen))
     {
         seRxState = UART_FRAME_RX_CHECKSUM;
     }
@@ -241,10 +241,12 @@ static void UartFrameProcessFull(void)
     uint8  ucChecksum = 0;
     uint8  ucStop = 0;
     uint32 ulExpectedLen = 0;
-    
+
     // Display received frame data using HexDump for debugging
     printf("[UartFrameReceiver] Raw frame data:\n\r");
+    #if ENABLE_HEXDUMP
     HexDump(sucFrameBuffer, sunFrameIndex);
+    #endif
 
     sFrame = sParsedFrame;
     pucPayload = &sucFrameBuffer[1 + FRAME_HEADER_SIZE];
@@ -268,7 +270,7 @@ static void UartFrameProcessFull(void)
         printf("[UartFrameReceiver] Frame validation failed/discarded.\n");
     }
 
-    if (sFrame.pucValue != NULL) 
+    if (sFrame.pucValue != NULL)
     {
         free(sFrame.pucValue);
         sFrame.pucValue = NULL;
@@ -293,13 +295,13 @@ static void UartFrameProcessReceived(DATA_FRAME *psFrame)
             }
             else
             {
-                printf("[UartFrameReceiver] CMD_INIT received, unknown type: 0x%02X\n\r", 
+                printf("[UartFrameReceiver] CMD_INIT received, unknown type: 0x%02X\n\r",
                         psFrame->ucType);
             }
 
             break;
         }
-            
+
         case CMD_TRANSFER:
         {
             if (psFrame->ucType == TYPE_DATA)
@@ -312,13 +314,13 @@ static void UartFrameProcessReceived(DATA_FRAME *psFrame)
             }
             else
             {
-                printf("[UartFrameReceiver] CMD_TRANSFER unknown type: 0x%02X\n\r", 
+                printf("[UartFrameReceiver] CMD_TRANSFER unknown type: 0x%02X\n\r",
                         psFrame->ucType);
             }
 
             break;
         }
-            
+
         default:
         {
             printf("[UartFrameReceiver] Unknown command. Cmd=0x%02X, Type=0x%02X\n\r",
@@ -338,18 +340,15 @@ static void UartFrameHandleInit(const DATA_FRAME *psFrame)
 {
     uint32 ulMaxChunkSize = 128U;
     DATA_FRAME stResp = {0};
-    
+
     if (psFrame != NULL && psFrame->pucValue != NULL && psFrame->ulLength == sizeof(uint32))
     {
         // Extract file size from the received data
         sulExpectedFileSize = *((uint32*)psFrame->pucValue);
         sulReceivedBytes = 0;
         blFileTransferInProgress = true;
-
-        printf("[UartFrameReceiver] File transfer initiated. Expected size: %lu bytes\n", 
-                sulExpectedFileSize);
     }
-    
+
     stResp.ucCmd = CMD_INIT;
     stResp.ucType = TYPE_CHUNK_SIZE;
     stResp.ulLength = sizeof(ulMaxChunkSize);
@@ -372,18 +371,15 @@ static void UartFrameHandleInit(const DATA_FRAME *psFrame)
 static void UartFrameHandleTransfer(const DATA_FRAME *psFrame)
 {
     DATA_FRAME stAck = {0};
-    
+
     if (psFrame != NULL)
     {
         // Update received bytes count if file transfer is in progress
         if (blFileTransferInProgress && psFrame->pucValue != NULL)
         {
             sulReceivedBytes += psFrame->ulLength;
-            printf("[UartFrameReceiver] Received chunk: %lu bytes, Total: %lu/%lu bytes\n", 
-                   psFrame->ulLength, sulReceivedBytes, sulExpectedFileSize);
-            
         }
-        
+
         stAck.ucCmd = CMD_TRANSFER;
         stAck.ucType = TYPE_ACK;
         stAck.ulLength = 0;
@@ -410,11 +406,11 @@ static void UartFrameHandleFileTransferComplete(void)
     blFileTransferInProgress = false;
     sulExpectedFileSize = 0;
     sulReceivedBytes = 0;
-    
+
     printf("[UartFrameReceiver] *** FILE TRANSFER COMPLETE ***\n");
     printf("[UartFrameReceiver] Total bytes received: %lu\n", sulReceivedBytes);
     printf("[UartFrameReceiver] Expected bytes: %lu\n", sulExpectedFileSize);
-    
+
     // Validate that we received the expected amount of data
     if (sulReceivedBytes == sulExpectedFileSize)
     {
@@ -422,9 +418,9 @@ static void UartFrameHandleFileTransferComplete(void)
     }
     else
     {
-        printf("[UartFrameReceiver] File transfer validation: MISMATCH (Expected: %lu, Received: %lu)\n", 
+        printf("[UartFrameReceiver] File transfer validation: MISMATCH (Expected: %lu, Received: %lu)\n",
                 sulExpectedFileSize, sulReceivedBytes);
     }
-      
+
 }
 // EOF

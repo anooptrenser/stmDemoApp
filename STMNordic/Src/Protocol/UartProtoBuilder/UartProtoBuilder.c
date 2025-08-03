@@ -16,6 +16,7 @@
 #include "UartDriver.h"
 #include "AppMain.h"
 #include "Tmp.h"
+
 //******************************* Local Types ********************************* 
 
 //***************************** Local Constants ******************************* 
@@ -108,12 +109,14 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
         if (ulFrameLen != 0)
         {
             // Wrap the frame with start/stop bytes
-            ulTotalLen = ulFrameLen + 2U;
+            ulTotalLen = ulFrameLen + 2;
             ucRawBuf[0] = UART_START_BYTE;
             memcpy(&ucRawBuf[1], ucFrameBuf, ulFrameLen);
             ucRawBuf[ulFrameLen + 1] = UART_STOP_BYTE;
 
+            #if ENABLE_HEXDUMP
             HexDump(ucRawBuf, ulTotalLen);
+            #endif
 
             // Send over UART
             blStatus = UartSend(ucRawBuf, ulTotalLen);
@@ -122,10 +125,7 @@ bool UartProtoSendFrame(const DATA_FRAME* psFrame)
             {
                 printf("UartSend Failed!");
             }
-            else
-            {
-                printf("Frame sent successfully (%lu bytes)\n\r", ulTotalLen);
-            }
+            
         }
         else
         {
