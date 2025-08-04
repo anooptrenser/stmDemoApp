@@ -205,8 +205,8 @@ static void UartFrameHandleStop(uint8 ucByte)
     if (UART_STOP_BYTE == ucByte)
     {
         UartFrameProcessFull();
-
-    } else
+    }
+    else
     {
         printf("[UartFrameReceiver] Bad STOP byte! Got 0x%02X\n", ucByte);
     }
