@@ -161,11 +161,13 @@ static void UartFrameResetState(void)
 //*****************************************************************************
 static void UartFrameHandleHeader(uint8 ucByte)
 {
+    uint8* pucHeader = NULL;
+
     sucFrameBuffer[sunFrameIndex++] = ucByte;
 
     if (sunFrameIndex == (FRAME_HEADER_SIZE + 1))
     {
-        uint8* pucHeader = &sucFrameBuffer[1];
+        pucHeader = &sucFrameBuffer[1];
         ParseHeader(pucHeader, &sParsedFrame);  // Parse once and store
         sulPayloadLen = sParsedFrame.ulLength;
 
