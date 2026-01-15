@@ -1,0 +1,2 @@
+../Core/Src/appMain/GPIO/gpioWrite.c:23:6:GpioWrite	16	static
+../Core/Src/appMain/GPIO/gpioWrite.c:36:9:GpioRead	16	static
